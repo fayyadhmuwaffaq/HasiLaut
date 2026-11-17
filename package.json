@@ -1,17 +1,23 @@
 {
-  "name": "lkjdslfkdsf",
+  "name": "hasilaut",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:admin": "node user-seed.js",
+    "seed:categories": "node scripts/seed-categories.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "next": "16.4.6",
+    "next-auth": "^5.0.0-beta.32",
+    "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
