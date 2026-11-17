@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#F1F5F9" />
+  <rect x="40" y="40" width="720" height="520" rx="8" stroke="#CBD5E1" stroke-width="2" />
+  <path d="M250 310C295 250 375 228 455 252C498 265 535 288 560 310C535 332 498 355 455 368C375 392 295 370 250 310Z" stroke="#64748B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M250 310L198 268V352L250 310Z" stroke="#64748B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="496" cy="298" r="7" fill="#64748B" />
+  <path d="M220 420C255 408 290 408 325 420C360 432 395 432 430 420C465 408 500 408 535 420C552 426 568 428 584 426" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" />
+  <text x="400" y="482" text-anchor="middle" fill="#475569" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="500">Foto produk belum tersedia</text>
+</svg>
