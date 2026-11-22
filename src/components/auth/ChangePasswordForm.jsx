@@ -1,82 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import PasswordInput from "@/components/ui/PasswordInput";
+import { useToast } from "@/components/ui/ToastProvider";
 import { ErrorBanner } from "@/components/ui/FeedbackStates";
-
-function PasswordInputRow({
-  id,
-  name,
-  label,
-  autoComplete,
-  value,
-  onChange,
-  showPassword,
-  onToggleShow,
-  toggleLabel,
-  inputRef,
-  helpText,
-  errorText,
-}) {
-  const helpId = helpText ? `${id}-help` : undefined;
-  const errorId = errorText ? `${id}-error` : undefined;
-  const describedBy =
-    [helpId, errorId].filter(Boolean).join(" ") || undefined;
-
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block mb-2 text-[14px] font-medium text-[#475569]"
-      >
-        {label}
-      </label>
-
-      <div className="flex items-stretch">
-        <input
-          ref={inputRef}
-          id={id}
-          name={name}
-          type={showPassword ? "text" : "password"}
-          autoComplete={autoComplete}
-          required
-          value={value}
-          onChange={onChange}
-          aria-invalid={Boolean(errorText)}
-          aria-describedby={describedBy}
-          className={`min-h-[44px] w-full flex-1 min-w-0 rounded-l-md border bg-[#FFFFFF] px-3.5 text-[16px] text-[#0F172A] focus:border-[#0284C7] ${
-            errorText ? "border-[#B91C1C]" : "border-[#64748B]"
-          }`}
-        />
-        <button
-          type="button"
-          onClick={onToggleShow}
-          aria-pressed={showPassword}
-          aria-label={toggleLabel}
-          className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-r-md border border-l-0 border-[#64748B] bg-[#F8FAFC] px-3.5 text-[14px] font-medium text-[#334155] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition-colors"
-        >
-          {showPassword ? "Sembunyikan" : "Tampilkan"}
-        </button>
-      </div>
-
-      {helpText ? (
-        <p id={helpId} className="mt-1.5 text-[14px] text-[#64748B]">
-          {helpText}
-        </p>
-      ) : null}
-
-      {errorText ? (
-        <p id={errorId} role="alert" className="mt-1.5 text-[14px] text-[#B91C1C]">
-          {errorText}
-        </p>
-      ) : null}
-    </div>
-  );
-}
 
 /**
  * Reusable password-change form backed by POST /api/account/password for any signed-in role.
  */
 export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
+  const { showSuccess } = useToast();
   const currentRef = useRef(null);
   const newRef = useRef(null);
   const confirmRef = useRef(null);
@@ -90,7 +23,6 @@ export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [serverError, setServerError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
   function focusFirstInvalid(errors) {
@@ -106,7 +38,6 @@ export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setServerError("");
-    setSuccessMessage("");
 
     const nextErrors = {};
     if (!currentPassword) {
@@ -164,9 +95,7 @@ export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
       setShowCurrent(false);
       setShowNew(false);
       setShowConfirm(false);
-      setSuccessMessage(
-        data?.message || "Kata sandi berhasil diperbarui."
-      );
+      showSuccess(data?.message || "Kata sandi berhasil diperbarui.");
       setSaving(false);
     } catch {
       setServerError(
@@ -180,17 +109,7 @@ export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       {serverError ? <ErrorBanner message={serverError} /> : null}
 
-      {successMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {successMessage}
-        </p>
-      ) : null}
-
-      <PasswordInputRow
+      <PasswordInput
         id={`${idPrefix}-current`}
         name="current_password"
         label="Kata Sandi Saat Ini"
@@ -208,7 +127,7 @@ export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
         errorText={fieldErrors.current_password}
       />
 
-      <PasswordInputRow
+      <PasswordInput
         id={`${idPrefix}-new`}
         name="new_password"
         label="Kata Sandi Baru"
@@ -225,7 +144,7 @@ export default function ChangePasswordForm({ idPrefix = "account-pw" }) {
         errorText={fieldErrors.new_password}
       />
 
-      <PasswordInputRow
+      <PasswordInput
         id={`${idPrefix}-confirm`}
         name="confirm_password"
         label="Konfirmasi Kata Sandi Baru"

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
 import { requireApiRole } from "@/lib/auth-guards";
+import { updateOwnAccountIdentity } from "@/lib/account-profile";
 
 export async function GET() {
   const { user, error } = await requireApiRole(["buyer"]);
@@ -37,38 +37,25 @@ export async function PATCH(request) {
     );
   }
 
-  const fullName =
-    typeof body?.full_name === "string" ? body.full_name.trim() : "";
-  const phoneNumber =
-    typeof body?.phone_number === "string" ? body.phone_number.trim() : "";
-
-  if (fullName.length < 2 || fullName.length > 100) {
-    return NextResponse.json(
-      { error: "Nama lengkap wajib diisi (2 sampai 100 karakter)." },
-      { status: 400 }
-    );
-  }
-
-  if (phoneNumber.length > 20) {
-    return NextResponse.json(
-      { error: "Nomor telepon maksimal 20 karakter." },
-      { status: 400 }
-    );
-  }
-
   try {
-    const result = await query(
-      `UPDATE users
-       SET full_name = $1,
-           phone_number = $2,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $3 AND role = 'buyer'
-       RETURNING id, full_name, email, phone_number`,
-      [fullName, phoneNumber || null, user.id]
-    );
+    const result = await updateOwnAccountIdentity({
+      userId: user.id,
+      role: "buyer",
+      body,
+      includePhone: true,
+    });
+
+    if (!result.ok) {
+      return NextResponse.json(
+        result.fieldErrors
+          ? { error: result.error, fieldErrors: result.fieldErrors }
+          : { error: result.error },
+        { status: result.status }
+      );
+    }
 
     return NextResponse.json(
-      { message: "Profil berhasil diperbarui.", profile: result.rows[0] },
+      { message: "Profil berhasil diperbarui.", profile: result.user },
       { status: 200 }
     );
   } catch (err) {

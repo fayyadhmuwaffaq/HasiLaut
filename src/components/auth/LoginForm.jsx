@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import PasswordInput from "@/components/ui/PasswordInput";
 
 function sanitizeCallbackUrl(rawUrl) {
   if (typeof rawUrl !== "string") {
@@ -52,6 +53,7 @@ export default function LoginForm({
   const passwordRef = useRef(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState(
     initialError === "CredentialsSignin"
@@ -177,37 +179,22 @@ export default function LoginForm({
           ) : null}
         </div>
 
-        <div>
-          <label
-            htmlFor="login-password"
-            className="block mb-2 text-[14px] font-medium text-[#475569]"
-          >
-            Kata Sandi
-          </label>
-          <input
-            ref={passwordRef}
-            id="login-password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            aria-invalid={Boolean(fieldErrors.password)}
-            aria-describedby={
-              fieldErrors.password ? "login-password-error" : undefined
-            }
-            className="h-[44px] w-full rounded-md border border-[#64748B] bg-[#FFFFFF] px-3.5 text-[16px] text-[#0F172A] focus:border-[#0284C7]"
-          />
-          {fieldErrors.password ? (
-            <p
-              id="login-password-error"
-              className="mt-1.5 text-[14px] text-[#B91C1C]"
-            >
-              {fieldErrors.password}
-            </p>
-          ) : null}
-        </div>
+        <PasswordInput
+          id="login-password"
+          name="password"
+          label="Kata Sandi"
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          showPassword={showPassword}
+          onToggleShow={() => setShowPassword((prev) => !prev)}
+          toggleLabel={
+            showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
+          }
+          inputRef={passwordRef}
+          errorText={fieldErrors.password}
+          errorRole={undefined}
+        />
 
         <button
           type="submit"
