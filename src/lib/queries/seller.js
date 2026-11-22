@@ -6,7 +6,7 @@ export async function getSellerOverviewStats(storeId) {
     query(
       `SELECT
          COUNT(*)::int AS total_products,
-         COUNT(*) FILTER (WHERE stock_kg >= 0.5)::int AS active_products
+         COUNT(*) FILTER (WHERE is_active = TRUE AND stock_kg >= 0.5)::int AS active_products
        FROM products
        WHERE store_id = $1`,
       [storeId]
@@ -48,6 +48,7 @@ export async function getSellerProducts(storeId) {
        p.description,
        p.price_per_kg,
        p.stock_kg,
+       p.is_active,
        p.image_url,
        p.created_at,
        p.updated_at,
@@ -81,6 +82,7 @@ export async function getSellerProductById(productId, storeId) {
        description,
        price_per_kg,
        stock_kg,
+       is_active,
        image_url,
        created_at,
        updated_at

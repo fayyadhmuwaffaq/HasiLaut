@@ -25,6 +25,7 @@ export async function getPublicFeaturedProducts({ limit = 6 } = {}) {
        p.description,
        p.price_per_kg,
        p.stock_kg,
+       p.is_active,
        p.image_url,
        p.created_at,
        c.id AS category_id,
@@ -40,7 +41,7 @@ export async function getPublicFeaturedProducts({ limit = 6 } = {}) {
      INNER JOIN users u ON u.id = s.seller_id
      INNER JOIN categories c ON c.id = p.category_id
      LEFT JOIN reviews r ON r.product_id = p.id
-     WHERE u.role = 'seller' AND u.seller_status = 'approved'
+     WHERE u.role = 'seller' AND u.seller_status = 'approved' AND p.is_active = TRUE
      GROUP BY p.id, c.id, s.id
      ORDER BY p.created_at DESC, p.id DESC
      LIMIT $1`,
@@ -59,6 +60,7 @@ export async function getBuyerRecommendedProducts({ limit = 6 } = {}) {
        p.description,
        p.price_per_kg,
        p.stock_kg,
+       p.is_active,
        p.image_url,
        p.created_at,
        c.id AS category_id,
@@ -83,6 +85,7 @@ export async function getBuyerRecommendedProducts({ limit = 6 } = {}) {
      ) rev ON rev.product_id = p.id
      WHERE u.role = 'seller'
        AND u.seller_status = 'approved'
+       AND p.is_active = TRUE
        AND p.stock_kg >= 0.5
      ORDER BY RANDOM()
      LIMIT $1`,
@@ -107,6 +110,7 @@ export async function searchProducts({
   const conditions = [
     "u.role = 'seller'",
     "u.seller_status = 'approved'",
+    "p.is_active = TRUE",
   ];
   const params = [];
 
@@ -161,6 +165,7 @@ export async function searchProducts({
        p.description,
        p.price_per_kg,
        p.stock_kg,
+       p.is_active,
        p.image_url,
        p.created_at,
        c.id AS category_id,
@@ -205,6 +210,7 @@ export async function getProductDetailById(rawId) {
        p.description,
        p.price_per_kg,
        p.stock_kg,
+       p.is_active,
        p.image_url,
        p.created_at,
        p.updated_at,
@@ -253,5 +259,97 @@ export async function getProductDetailById(rawId) {
   return {
     product,
     reviews: reviewsResult.rows,
+  };
+}
+
+/**
+ * Fetch an approved seller store profile along with paginated catalog products.
+ */
+export async function getPublicStoreById(
+  rawId,
+  { sort = "newest", page = 1, pageSize = 12 } = {}
+) {
+  const storeId = Number(rawId);
+  if (!Number.isInteger(storeId) || storeId <= 0) {
+    return null;
+  }
+
+  const storeResult = await query(
+    `SELECT
+       s.id,
+       s.store_name,
+       s.description,
+       s.dock_location,
+       s.store_image_url,
+       s.created_at,
+       u.full_name AS owner_name,
+       (
+         SELECT COUNT(*)::int
+         FROM products p
+         WHERE p.store_id = s.id AND p.is_active = TRUE
+       ) AS total_products,
+       (
+         SELECT COUNT(*)::int
+         FROM products p
+         WHERE p.store_id = s.id AND p.is_active = TRUE AND p.stock_kg >= 0.5
+       ) AS available_products
+     FROM stores s
+     INNER JOIN users u ON u.id = s.seller_id
+     WHERE s.id = $1
+       AND u.role = 'seller'
+       AND u.seller_status = 'approved'
+     LIMIT 1`,
+    [storeId]
+  );
+
+  const store = storeResult.rows[0];
+  if (!store) {
+    return null;
+  }
+
+  const safePageSize = Math.min(Math.max(Number(pageSize) || 12, 1), 36);
+  const requestedPage = Math.max(Number(page) || 1, 1);
+  const totalCount = store.total_products ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / safePageSize));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const offset = (currentPage - 1) * safePageSize;
+  const orderBySql = SORT_ORDER_SQL[sort] || SORT_ORDER_SQL.newest;
+
+  const productsResult = await query(
+    `SELECT
+       p.id,
+       p.name,
+       p.description,
+       p.price_per_kg,
+       p.stock_kg,
+       p.is_active,
+       p.image_url,
+       p.created_at,
+       c.id AS category_id,
+       c.name AS category_name,
+       c.slug AS category_slug,
+       s.id AS store_id,
+       s.store_name,
+       s.dock_location,
+       COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0)::float AS avg_rating,
+       COUNT(r.id)::int AS review_count
+     FROM products p
+     INNER JOIN stores s ON s.id = p.store_id
+     INNER JOIN categories c ON c.id = p.category_id
+     LEFT JOIN reviews r ON r.product_id = p.id
+     WHERE s.id = $1 AND p.is_active = TRUE
+     GROUP BY p.id, c.id, s.id
+     ORDER BY ${orderBySql}
+     LIMIT $2 OFFSET $3`,
+    [storeId, safePageSize, offset]
+  );
+
+  return {
+    store,
+    products: productsResult.rows,
+    totalCount,
+    totalPages,
+    currentPage,
+    pageSize: safePageSize,
   };
 }

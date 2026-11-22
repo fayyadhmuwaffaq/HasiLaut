@@ -23,6 +23,7 @@ export async function getBuyerCartData(buyerId) {
        p.name AS product_name,
        p.price_per_kg,
        p.stock_kg,
+       p.is_active,
        p.image_url,
        s.id AS store_id,
        s.store_name,
@@ -47,7 +48,10 @@ export async function getBuyerCartData(buyerId) {
       quantity_kg: quantityKg,
       stock_kg: stockKg,
       subtotal: Math.round(pricePerKg * quantityKg * 100) / 100,
-      is_available: row.seller_status === "approved" && stockKg >= quantityKg,
+      is_available:
+        row.seller_status === "approved" &&
+        row.is_active !== false &&
+        stockKg >= quantityKg,
     };
   });
 

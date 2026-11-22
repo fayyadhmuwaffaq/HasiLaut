@@ -32,6 +32,7 @@ const authMiddleware = auth((req) => {
     if (
       pathname === "/" ||
       isPathMatch(pathname, "/products") ||
+      isPathMatch(pathname, "/stores") ||
       isPathMatch(pathname, "/buyer") ||
       isPathMatch(pathname, "/seller") ||
       pathname === "/login" ||
@@ -47,6 +48,7 @@ const authMiddleware = auth((req) => {
       if (
         pathname === "/" ||
         isPathMatch(pathname, "/products") ||
+        isPathMatch(pathname, "/stores") ||
         isPathMatch(pathname, "/buyer") ||
         isPathMatch(pathname, "/seller/pending") ||
         pathname === "/seller" ||

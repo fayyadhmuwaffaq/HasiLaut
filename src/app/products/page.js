@@ -99,8 +99,8 @@ export default async function ProductsCatalogPage({ searchParams }) {
           Katalog Hasil Laut
         </h1>
         <p className="max-w-[65ch] text-[16px] text-[#475569]">
-          Temukan tangkapan segar berdasarkan kata kunci, kategori, atau urutan
-          harga per kilogram.
+          Gunakan pencarian di bilah atas atau saring hasil tangkapan segar
+          berdasarkan kategori dan urutan harga per kilogram.
         </p>
       </div>
 

@@ -4,7 +4,12 @@ import { formatKg, formatRupiah } from "@/lib/format";
 import AddToCartButton from "@/components/AddToCartButton";
 import { StarIcon } from "@/components/ui/Icons";
 
-export default function ProductCard({ product, isBuyer = false, priorityImage = false }) {
+export default function ProductCard({
+  product,
+  isBuyer = false,
+  priorityImage = false,
+  showStoreLink = true,
+}) {
   const imageSrc = product.image_url || "/placeholders/seafood-placeholder.svg";
   const stockKg = Number(product.stock_kg);
   const isOutOfStock = !Number.isFinite(stockKg) || stockKg < 0.5;
@@ -52,7 +57,21 @@ export default function ProductCard({ product, isBuyer = false, priorityImage = 
           </Link>
         </h3>
 
-        <p className="mt-1 text-[14px] text-[#475569]">{storeMeta}</p>
+        {showStoreLink && product.store_id ? (
+          <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[14px] text-[#475569]">
+            <Link
+              href={`/stores/${product.store_id}`}
+              className="inline-flex min-h-[44px] items-center font-medium text-[#0369A1] hover:underline"
+            >
+              {product.store_name}
+            </Link>
+            {product.dock_location ? (
+              <span>· {product.dock_location}</span>
+            ) : null}
+          </p>
+        ) : (
+          <p className="mt-1 text-[14px] text-[#475569]">{storeMeta}</p>
+        )}
 
         <div className="mt-4 pt-3 border-t border-[#E2E8F0] flex items-baseline justify-between gap-3">
           <p className="tabular-nums">

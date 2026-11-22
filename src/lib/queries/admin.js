@@ -11,7 +11,7 @@ export async function getAdminOverviewStats() {
         FROM products p
         INNER JOIN stores s ON s.id = p.store_id
         INNER JOIN users u ON u.id = s.seller_id
-        WHERE u.seller_status = 'approved' AND p.stock_kg >= 0.5
+        WHERE u.seller_status = 'approved' AND p.is_active = TRUE AND p.stock_kg >= 0.5
       ) AS active_products,
       (SELECT COUNT(*)::int FROM categories) AS total_categories
   `);
@@ -104,6 +104,7 @@ export async function getAdminProducts() {
       p.name,
       p.price_per_kg,
       p.stock_kg,
+      p.is_active,
       p.image_url,
       p.created_at,
       c.name AS category_name,
