@@ -1,46 +1,66 @@
-# HasiLaut
+<div align="center">
+  <img src="./public/logo.png" alt="Logo HasiLaut" width="120" />
+  <h1>HasiLaut</h1>
+  <p>
+    <strong>Platform E-Commerce Hasil Tangkap Laut Segar Langsung dari Nelayan &amp; Mitra Pesisir</strong>
+  </p>
+  <p>
+    Transaksi grosir maupun eceran dalam satuan kilogram (minimal <code>0,5 kg</code>) berbasis Next.js App Router, NextAuth v5, dan PostgreSQL Raw SQL.
+  </p>
 
-Platform e-commerce web hasil tangkapan laut segar langsung dari nelayan dan mitra pesisir berbasis **Next.js App Router**, **NextAuth v5**, dan **PostgreSQL** (`pg` Raw SQL) dengan satuan transaksi kilogram (minimal `0.5 kg`).
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16.4.6-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16.4.6" />
+    <img src="https://img.shields.io/badge/React-19.3.0-149ECA?style=flat-square&logo=react&logoColor=white" alt="React 19.3.0" />
+    <img src="https://img.shields.io/badge/PostgreSQL-Raw_SQL_(pg)-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/NextAuth-v5_JWT-0F172A?style=flat-square" alt="NextAuth v5" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
+  </p>
+</div>
+
+---
+
+## Tentang Proyek
+
+**HasiLaut** menjembatani mitra nelayan dan pelaku usaha kuliner maupun rumah tangga dalam satu platform terpadu. Seluruh pencatatan produk, pemecahan pesanan multi-toko saat checkout, verifikasi mitra oleh admin, hingga pembaruan stok dirancang menggunakan transaksi PostgreSQL eksplisit agar integritas data tetap terjaga.
+
+---
 
 ## Fitur Utama per Peran
 
-- **Publik & Pembeli (Buyer)**:
-  - Menjelajahi katalog hasil laut dengan pencarian kata kunci, filter kategori, rentang harga, pengurutan, dan paginasi (`/products`).
-  - Melihat detail produk, ulasan terverifikasi, dan halaman profil lapak nelayan (`/stores/[id]`).
-  - Mengelola keranjang belanja, multi-alamat pengiriman, serta checkout yang otomatis memecah pesanan per toko dengan metode pembayaran COD atau Transfer Bank Manual.
-  - Memantau status pesanan pada tab terstruktur, membatalkan pesanan yang belum diproses, dan memberikan ulasan saat pesanan selesai.
-  - Mengelola identitas akun (nama, email, nomor telepon), alamat pengiriman, dan kata sandi.
-- **Mitra Nelayan (Seller)**:
-  - Pendaftaran akun mitra dengan verifikasi status oleh Admin (`pending`, `approved`, `rejected`).
-  - Ringkasan statistik lapak, pengelolaan profil toko dan foto dermaga, serta toggle aktif/nonaktif produk tanpa menghapus riwayat pesanan.
-  - Mengelola pesanan masuk berdasarkan alur status (`Menunggu Pembayaran` -> `Diproses` -> `Dikirim` -> `Selesai`, atau `Dibatalkan`).
-  - Mengelola identitas akun pribadi serta kata sandi.
-- **Admin**:
-  - Ringkasan statistik sistem, antrean persetujuan/penolakan mitra nelayan, pengelolaan kategori hasil laut, pengawasan produk, serta manajemen pengguna (`buyer` dan `seller`).
-  - Mengelola identitas akun admin sendiri dan kata sandi.
+| Peran | Kemampuan & Alur Utama |
+| :--- | :--- |
+| **Publik & Pembeli (`Buyer`)** | Pencarian katalog tunggal di bilah navigasi, filter kategori &amp; rentang harga, pengurutan &amp; paginasi (`/products`), detail produk beserta ulasan terverifikasi, serta halaman profil lapak nelayan (`/stores/[id]`). Mendukung keranjang belanja, multi-alamat pengiriman, checkout multi-toko otomatis (`COD` atau `Transfer Bank Manual`), pemantauan status pesanan per tab, pembatalan pesanan sebelum diproses, ulasan produk selesai, dan pengelolaan identitas/email serta kata sandi akun. |
+| **Mitra Nelayan (`Seller`)** | Pendaftaran mitra dengan alur verifikasi admin (`pending`, `approved`, `rejected`), ringkasan statistik lapak, pengelolaan profil &amp; foto dermaga, penambahan/pembaruan produk (minimal `0,5 kg`), toggle aktif/nonaktif produk tanpa menghapus riwayat pesanan, manajemen alur status pesanan masuk, serta pengelolaan identitas akun &amp; kata sandi. |
+| **Administrator (`Admin`)** | Ringkasan metrik sistem, antrean persetujuan/penolakan akun mitra nelayan, CRUD master kategori hasil laut, pengawasan seluruh produk lapak, moderasi pengguna (`buyer` dan `seller`), serta pengaturan identitas akun &amp; kata sandi admin sendiri. |
+
+---
+
+## Keunggulan Teknis
+
+- **Keamanan Akses Berlapis**: Pemisahan konfigurasi autentikasi Edge-compatible (`src/auth.config.js`) dan Server Node (`src/auth.js`), gerbang awal berbasis JWT di `src/middleware.js`, serta verifikasi ulang data pengguna terkini ke PostgreSQL di `src/lib/auth-guards.js`.
+- **Checkout Multi-Toko Atomik**: Proses checkout dibungkus transaksi database (`BEGIN` / `COMMIT` / `ROLLBACK`) dengan penguncian baris deterministik (`FOR UPDATE`) untuk mencegah stok minus saat transaksi bersamaan, sekaligus memecah keranjang multi-lapak menjadi pesanan terpisah per toko.
+- **Snapshot Histori Transaksi**: Data pesanan menyimpan salinan alamat pengiriman, nama produk, dan harga per kilogram saat checkout sehingga perubahan data katalog di kemudian hari tidak mengubah nota lama.
+- **Validasi Unggahan Gambar**: Pemeriksaan ukuran maksimal `2 MB`, kesesuaian MIME type, validasi *magic bytes* header JPEG/PNG/WebP, dan penamaan acak berbasis UUID.
+- **Umpan Balik Antarmuka Terpusat**: Notifikasi sukses maupun validasi error (seperti batas stok keranjang) ditampilkan konsisten lewat *toast notification* global di pojok kanan atas.
+
+---
 
 ## Tumpukan Teknologi
 
-- **Framework**: Next.js `16.4.6` (App Router, Turbopack), React `19.3.0`
-- **Styling**: Tailwind CSS `v4` (`@tailwindcss/turbopack`)
-- **Autentikasi**: `next-auth` `v5.0.0-beta.32` (JWT + `Credentials` provider) & `bcrypt` (`salt rounds = 12`)
-- **Database**: PostgreSQL dengan `pg` Pool (`Raw SQL` terparameter dan helper transaksi eksplisit `withTransaction`)
+| Lapisan | Teknologi |
+| :--- | :--- |
+| **Framework & UI** | Next.js `16.4.6` (App Router, Turbopack), React `19.3.0`, Tailwind CSS `4.3.3` |
+| **Autentikasi & Keamanan** | `next-auth` `v5.0.0-beta.32` (JWT + `Credentials`), `bcrypt` (cost factor `12`) |
+| **Database** | PostgreSQL via driver `pg` (`Raw SQL` terparameter &amp; helper transaksi eksplisit) |
+| **Quality Check** | ESLint `v9` (`eslint-config-next/core-web-vitals`) |
 
-## Struktur Direktori Utama
+---
 
-- `schema.md`: Spesifikasi skema database dan skrip DDL PostgreSQL lengkap (10 tabel, 4 tipe ENUM, constraint, dan 8 index).
-- `user-seed.js` & `scripts/`: Utilitas CLI (`env.js`, `seed-categories.js`) untuk seeding Admin awal dan kategori standar.
-- `public/`: Aset statis, placeholder SVG produk/toko, dan direktori penyimpanan lokal file unggahan (`/uploads/products`, `/uploads/stores`).
-- `src/app/`: Halaman App Router berdasarkan domain peran (`admin/`, `buyer/`, `seller/`, publik `/products`, `/stores/[id]`, `/login`, `/register`) serta seluruh Route Handlers di `src/app/api/`.
-- `src/components/`: Komponen UI reusable (`ui/`), form autentikasi (`auth/`), tampilan manajemen per peran (`admin/`, `buyer/`, `seller/`), serta komponen navigasi & katalog (`Navbar`, `CatalogFilters`, `ProductCard`).
-- `src/lib/`: Koneksi PostgreSQL (`db.js`), guard halaman & API (`auth-guards.js`), helper profil akun (`account-profile.js`), validasi/upload gambar (`upload.js`), utilitas format (`format.js`), dan modul query per domain (`queries/`).
-- `src/auth.config.js`, `src/auth.js`, `src/middleware.js`: Konfigurasi Edge/Server NextAuth dan proteksi rute berbasis peran.
-
-## Cara Menjalankan di Lokal
+## Panduan Menjalankan di Lokal
 
 ### 1. Prasyarat
-- Node.js (disarankan v20 atau lebih baru)
-- PostgreSQL (lokal atau terkelola)
+- **Node.js** (disarankan v20 atau lebih baru)
+- **PostgreSQL** (lokal atau terkelola)
 
 ### 2. Instalasi Dependensi
 ```bash
@@ -48,7 +68,7 @@ npm install
 ```
 
 ### 3. Konfigurasi Variabel Lingkungan
-Buat berkas `.env.local` di root proyek dan isi variabel berikut sesuai lingkungan PostgreSQL Anda:
+Buat berkas `.env.local` pada root proyek dan lengkapi variabel berikut:
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/hasilaut"
@@ -62,26 +82,22 @@ ADMIN_PASSWORD="AdminHasiLaut123!"
 ADMIN_PHONE="081100000001"
 ```
 
-### 4. Pembuatan Tabel Database
-Jalankan seluruh perintah DDL SQL pada bagian **2. DDL Script (PostgreSQL Table Definitions)** di [schema.md](./schema.md) ke database PostgreSQL target (misalnya menggunakan `psql -d hasilaut -f schema.sql`).
+### 4. Inisialisasi Skema Database
+Jalankan seluruh perintah DDL SQL pada bagian **2. DDL Script (PostgreSQL Table Definitions)** di [schema.md](./schema.md) ke database PostgreSQL target untuk membuat seluruh enum, 10 tabel utama, constraint, dan index.
 
-### 5. Seeding Kategori & Akun Admin
+### 5. Seeding Data Awal
 ```bash
 npm run seed:categories
 npm run seed:admin
 ```
 
-### 6. Menjalankan Aplikasi
-Untuk mode pengembangan:
-```bash
-npm run dev
-```
+### 6. Daftar Perintah Utama
 
-Untuk verifikasi lint dan build produksi:
-```bash
-npm run lint
-npm run build
-npm start
-```
-
-Aplikasi dapat diakses pada `http://localhost:3000`.
+| Perintah | Kegunaan |
+| :--- | :--- |
+| `npm run dev` | Menjalankan server pengembangan lokal (`http://localhost:3000`) |
+| `npm run lint` | Menjalankan pemeriksaan ESLint pada kode sumber |
+| `npm run build` | Membangun bundel produksi Next.js (Turbopack) |
+| `npm start` | Menjalankan server dari hasil build produksi |
+| `npm run seed:categories` | Mengisi 5 kategori awal hasil laut secara idempoten |
+| `npm run seed:admin` | Membuat atau memperbarui akun Administrator awal |
