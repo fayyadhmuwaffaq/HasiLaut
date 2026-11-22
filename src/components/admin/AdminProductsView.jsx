@@ -5,16 +5,17 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { formatKg, formatRupiah } from "@/lib/format";
 
 export default function AdminProductsView({ initialProducts }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [products, setProducts] = useState(initialProducts);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
   async function handleConfirmDelete() {
     if (!deleteTarget) {
@@ -23,7 +24,6 @@ export default function AdminProductsView({ initialProducts }) {
 
     setDeleting(true);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(`/api/admin/products/${deleteTarget.id}`, {
@@ -39,7 +39,7 @@ export default function AdminProductsView({ initialProducts }) {
       }
 
       setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-      setStatusMessage(
+      showSuccess(
         data?.message || `Produk "${deleteTarget.name}" telah dihapus.`
       );
       setDeleting(false);
@@ -64,16 +64,6 @@ export default function AdminProductsView({ initialProducts }) {
   return (
     <div className="space-y-5">
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
 
       <div className="overflow-x-auto rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
         <table className="w-full text-left border-collapse">
@@ -110,6 +100,11 @@ export default function AdminProductsView({ initialProducts }) {
                       <p className="text-[14px] text-[#475569]">
                         {product.category_name}
                       </p>
+                      {product.is_active === false ? (
+                        <p className="mt-1 inline-flex rounded-md bg-[#F1F5F9] px-2 py-0.5 text-[12px] font-medium text-[#475569]">
+                          Dinonaktifkan Penjual
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 </td>

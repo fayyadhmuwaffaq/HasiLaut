@@ -3,11 +3,13 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { CloseIcon } from "@/components/ui/Icons";
 
 export default function AdminCategoriesView({ initialCategories }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [categories, setCategories] = useState(initialCategories);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
@@ -20,7 +22,6 @@ export default function AdminCategoriesView({ initialCategories }) {
   const [deleting, setDeleting] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
   const editTitleId = useId();
   const editInputRef = useRef(null);
@@ -45,7 +46,6 @@ export default function AdminCategoriesView({ initialCategories }) {
   async function handleCreate(event) {
     event.preventDefault();
     setErrorMessage("");
-    setStatusMessage("");
 
     const trimmed = newName.trim();
     if (trimmed.length < 2) {
@@ -70,7 +70,7 @@ export default function AdminCategoriesView({ initialCategories }) {
 
       setCategories((prev) => [...prev, data.category]);
       setNewName("");
-      setStatusMessage(data?.message || "Kategori ditambahkan.");
+      showSuccess(data?.message || "Kategori ditambahkan.");
       setCreating(false);
       router.refresh();
     } catch {
@@ -86,7 +86,6 @@ export default function AdminCategoriesView({ initialCategories }) {
     }
 
     setErrorMessage("");
-    setStatusMessage("");
     setSavingEdit(true);
 
     try {
@@ -110,7 +109,7 @@ export default function AdminCategoriesView({ initialCategories }) {
             : cat
         )
       );
-      setStatusMessage(data?.message || "Kategori diperbarui.");
+      showSuccess(data?.message || "Kategori diperbarui.");
       setSavingEdit(false);
       setEditTarget(null);
       router.refresh();
@@ -127,7 +126,6 @@ export default function AdminCategoriesView({ initialCategories }) {
 
     setDeleting(true);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(`/api/admin/categories/${deleteTarget.id}`, {
@@ -145,7 +143,7 @@ export default function AdminCategoriesView({ initialCategories }) {
       setCategories((prev) =>
         prev.filter((cat) => cat.id !== deleteTarget.id)
       );
-      setStatusMessage(data?.message || "Kategori dihapus.");
+      showSuccess(data?.message || "Kategori dihapus.");
       setDeleting(false);
       setDeleteTarget(null);
       router.refresh();
@@ -189,16 +187,6 @@ export default function AdminCategoriesView({ initialCategories }) {
       </form>
 
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
 
       {categories.length === 0 ? (
         <EmptyState

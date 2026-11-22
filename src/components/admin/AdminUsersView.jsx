@@ -4,17 +4,19 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { CloseIcon } from "@/components/ui/Icons";
 import { formatDateTime } from "@/lib/format";
 
 const ROLE_TABS = [
-  { id: "buyer", label: "Pembeli (Buyer)" },
-  { id: "seller", label: "Penjual (Seller)" },
+  { id: "buyer", label: "Pembeli" },
+  { id: "seller", label: "Penjual" },
 ];
 
 export default function AdminUsersView({ initialUsers, currentAdminId }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [users, setUsers] = useState(initialUsers);
   const [activeTab, setActiveTab] = useState("buyer");
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +35,6 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
 
   const [editError, setEditError] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
   const editTitleId = useId();
   const editNameRef = useRef(null);
@@ -148,7 +149,6 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
 
     setEditError("");
     setErrorMessage("");
-    setStatusMessage("");
     setSavingEdit(true);
 
     try {
@@ -177,7 +177,7 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
             : u
         )
       );
-      setStatusMessage(data?.message || "Data pengguna diperbarui.");
+      showSuccess(data?.message || "Data pengguna diperbarui.");
       setSavingEdit(false);
       setEditTarget(null);
       router.refresh();
@@ -194,7 +194,6 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
 
     setDeleting(true);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(`/api/admin/users/${deleteTarget.id}`, {
@@ -210,7 +209,7 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
       }
 
       setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
-      setStatusMessage(data?.message || "Pengguna dihapus.");
+      showSuccess(data?.message || "Pengguna dihapus.");
       setDeleting(false);
       setDeleteTarget(null);
       router.refresh();
@@ -231,7 +230,7 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#E2E8F0] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
           <div className="p-5 sm:p-6 space-y-1">
             <p className="text-[14px] font-medium text-[#475569]">
-              Total Pembeli (Buyer)
+              Total Pembeli
             </p>
             <p className="text-[28px] font-bold text-[#0F172A] tabular-nums">
               {buyerUsers.length}
@@ -243,7 +242,7 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
 
           <div className="p-5 sm:p-6 space-y-1">
             <p className="text-[14px] font-medium text-[#475569]">
-              Total Penjual (Seller)
+              Total Penjual
             </p>
             <p className="text-[28px] font-bold text-[#0284C7] tabular-nums">
               {sellerUsers.length}
@@ -257,16 +256,6 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
       </section>
 
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
 
       <div
         role="tablist"

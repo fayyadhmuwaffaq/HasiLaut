@@ -4,17 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { formatDateTime } from "@/lib/format";
 
 export default function AdminSellerQueueView({ initialSellers }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [sellers, setSellers] = useState(initialSellers);
   const [statusFilter, setStatusFilter] = useState("all");
   const [busyId, setBusyId] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
   const filteredSellers =
     statusFilter === "all"
@@ -24,7 +25,6 @@ export default function AdminSellerQueueView({ initialSellers }) {
   async function updateSellerStatus(seller, nextStatus) {
     setBusyId(seller.id);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(`/api/admin/sellers/${seller.id}`, {
@@ -48,7 +48,7 @@ export default function AdminSellerQueueView({ initialSellers }) {
           item.id === seller.id ? { ...item, seller_status: nextStatus } : item
         )
       );
-      setStatusMessage(
+      showSuccess(
         data?.message || `Status ${seller.full_name} diperbarui.`
       );
       setBusyId(null);
@@ -100,16 +100,6 @@ export default function AdminSellerQueueView({ initialSellers }) {
       </div>
 
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
 
       {filteredSellers.length === 0 ? (
         <EmptyState
