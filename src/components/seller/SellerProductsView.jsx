@@ -5,16 +5,56 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { formatKg, formatRupiah } from "@/lib/format";
 
 export default function SellerProductsView({ initialProducts }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [products, setProducts] = useState(initialProducts);
+  const [togglingProductId, setTogglingProductId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
+
+  async function handleToggleActive(product) {
+    const nextActive = product.is_active === false;
+    setTogglingProductId(product.id);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch(`/api/seller/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: nextActive }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setErrorMessage(data?.error || "Gagal mengubah status produk.");
+        setTogglingProductId(null);
+        return;
+      }
+
+      setProducts((prev) =>
+        prev.map((item) =>
+          item.id === product.id ? { ...item, is_active: nextActive } : item
+        )
+      );
+      showSuccess(
+        data?.message ||
+          (nextActive
+            ? `Produk "${product.name}" kembali diaktifkan.`
+            : `Produk "${product.name}" dinonaktifkan dari etalase pembeli.`)
+      );
+      setTogglingProductId(null);
+      router.refresh();
+    } catch {
+      setErrorMessage("Terjadi kendala jaringan saat mengubah status produk.");
+      setTogglingProductId(null);
+    }
+  }
 
   async function handleConfirmDelete() {
     if (!deleteTarget) {
@@ -23,7 +63,6 @@ export default function SellerProductsView({ initialProducts }) {
 
     setDeleting(true);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(`/api/seller/products/${deleteTarget.id}`, {
@@ -39,7 +78,7 @@ export default function SellerProductsView({ initialProducts }) {
       }
 
       setProducts((prev) => prev.filter((item) => item.id !== deleteTarget.id));
-      setStatusMessage(`Produk "${deleteTarget.name}" telah dihapus.`);
+      showSuccess(`Produk "${deleteTarget.name}" telah dihapus.`);
       setDeleting(false);
       setDeleteTarget(null);
       router.refresh();
@@ -65,16 +104,6 @@ export default function SellerProductsView({ initialProducts }) {
     <div className="space-y-5">
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
 
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
-
       <div className="overflow-x-auto rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -83,12 +112,16 @@ export default function SellerProductsView({ initialProducts }) {
               <th className="py-3.5 px-4">Kategori</th>
               <th className="py-3.5 px-4 text-right">Harga / Kg</th>
               <th className="py-3.5 px-4 text-right">Stok</th>
+              <th className="py-3.5 px-4">Status</th>
               <th className="py-3.5 px-5 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E2E8F0] text-[15px]">
             {products.map((product) => {
               const isOutOfStock = product.stock_kg < 0.5;
+              const isActive = product.is_active !== false;
+              const isToggling = togglingProductId === product.id;
+
               return (
                 <tr key={product.id}>
                   <td className="py-4 px-5">
@@ -102,16 +135,22 @@ export default function SellerProductsView({ initialProducts }) {
                           alt={product.name}
                           width={96}
                           height={72}
-                          className="h-full w-full object-cover"
+                          className={`h-full w-full object-cover ${
+                            isActive ? "" : "opacity-60"
+                          }`}
                         />
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-[#0F172A]">
                           {product.name}
                         </p>
-                        {isOutOfStock ? (
+                        {!isActive ? (
+                          <p className="text-[13px] font-medium text-[#B45309]">
+                            Nonaktif (tersembunyi dari pembeli)
+                          </p>
+                        ) : isOutOfStock ? (
                           <p className="text-[13px] font-medium text-[#B91C1C]">
-                            Nonaktif / stok habis
+                            Stok habis
                           </p>
                         ) : null}
                       </div>
@@ -129,6 +168,45 @@ export default function SellerProductsView({ initialProducts }) {
                     }`}
                   >
                     {formatKg(product.stock_kg)}
+                  </td>
+                  <td className="py-4 px-4 whitespace-nowrap">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isActive}
+                      aria-label={
+                        isActive
+                          ? `Nonaktifkan produk ${product.name}`
+                          : `Aktifkan produk ${product.name}`
+                      }
+                      disabled={isToggling}
+                      onClick={() => handleToggleActive(product)}
+                      className="inline-flex min-h-[44px] items-center gap-2.5 px-1 disabled:opacity-50"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                          isActive ? "bg-[#0369A1]" : "bg-[#CBD5E1]"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 rounded-full bg-[#FFFFFF] shadow-sm transition-transform ${
+                            isActive ? "translate-x-5" : "translate-x-0.5"
+                          }`}
+                        />
+                      </span>
+                      <span
+                        className={`text-[14px] font-semibold ${
+                          isActive ? "text-[#047857]" : "text-[#64748B]"
+                        }`}
+                      >
+                        {isToggling
+                          ? "Menyimpan..."
+                          : isActive
+                            ? "Aktif"
+                            : "Nonaktif"}
+                      </span>
+                    </button>
                   </td>
                   <td className="py-4 px-5 text-right whitespace-nowrap">
                     <div className="inline-flex items-center justify-end gap-2.5">

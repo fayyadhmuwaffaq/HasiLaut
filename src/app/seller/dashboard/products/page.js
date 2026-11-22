@@ -38,8 +38,8 @@ export default async function SellerProductsPage() {
             Produk Lapak
           </h1>
           <p className="text-[16px] text-[#475569]">
-            Tambahkan, perbarui stok kilogram, atau hapus produk hasil laut
-            Anda.
+            Tambahkan, perbarui stok kilogram, aktifkan atau nonaktifkan
+            penjualan, maupun hapus produk hasil laut Anda.
           </p>
         </div>
 

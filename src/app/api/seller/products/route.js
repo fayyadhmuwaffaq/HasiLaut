@@ -117,7 +117,7 @@ export async function POST(request) {
          price_per_kg, stock_kg, image_url
        )
        VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, image_url, created_at`,
+       RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, is_active, image_url, created_at`,
       [
         store.id,
         categoryId,

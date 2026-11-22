@@ -43,6 +43,58 @@ export async function PATCH(request, context) {
   }
 
   let formData;
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Format pembaruan status produk tidak valid." },
+        { status: 400 }
+      );
+    }
+
+    if (typeof body?.is_active !== "boolean") {
+      return NextResponse.json(
+        { error: "Status aktif produk harus berupa boolean (true/false)." },
+        { status: 400 }
+      );
+    }
+
+    try {
+      const toggled = await query(
+        `UPDATE products
+         SET is_active = $1,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $2 AND store_id = $3
+         RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, is_active, image_url, updated_at`,
+        [body.is_active, existing.id, store.id]
+      );
+
+      const row = toggled.rows[0];
+      return NextResponse.json(
+        {
+          message: body.is_active
+            ? `Produk "${row.name}" kembali diaktifkan.`
+            : `Produk "${row.name}" dinonaktifkan dari etalase pembeli.`,
+          product: {
+            ...row,
+            price_per_kg: Number(row.price_per_kg),
+            stock_kg: Number(row.stock_kg),
+          },
+        },
+        { status: 200 }
+      );
+    } catch (err) {
+      console.error("PATCH toggle /api/seller/products/[id] error:", err);
+      return NextResponse.json(
+        { error: "Gagal mengubah status produk." },
+        { status: 500 }
+      );
+    }
+  }
+
   try {
     formData = await request.formData();
   } catch {
@@ -131,7 +183,7 @@ export async function PATCH(request, context) {
            image_url = $6,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $7 AND store_id = $8
-       RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, image_url, updated_at`,
+       RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, is_active, image_url, updated_at`,
       [
         categoryId,
         name,
@@ -213,7 +265,7 @@ export async function DELETE(_request, context) {
       return NextResponse.json(
         {
           error:
-            "Produk ini sudah memiliki riwayat pesanan sehingga tidak dapat dihapus. Ubah stok menjadi 0 kg untuk menonaktifkan penjualan.",
+            "Produk ini sudah memiliki riwayat pesanan sehingga tidak dapat dihapus. Gunakan toggle status untuk menonaktifkan produk.",
         },
         { status: 409 }
       );

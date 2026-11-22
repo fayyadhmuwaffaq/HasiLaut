@@ -73,7 +73,7 @@ export default async function SellerDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E2E8F0] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
           <div className="p-6 space-y-1">
             <p className="text-[14px] font-medium text-[#475569]">
-              Produk Aktif (Stok &ge; 0,5 kg)
+              Produk Aktif (Aktif & Stok &ge; 0,5 kg)
             </p>
             <p className="text-[28px] font-bold text-[#0F172A] tabular-nums">
               {stats.activeProducts}

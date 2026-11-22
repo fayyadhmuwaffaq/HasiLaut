@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/ToastProvider";
 import { ErrorBanner } from "@/components/ui/FeedbackStates";
 
 export default function SellerStoreForm({ initialStore }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const objectUrlRef = useRef(null);
 
   const [storeName, setStoreName] = useState(initialStore.store_name || "");
@@ -22,7 +24,6 @@ export default function SellerStoreForm({ initialStore }) {
   );
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
     return () => {
@@ -55,7 +56,6 @@ export default function SellerStoreForm({ initialStore }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setErrorMessage("");
-    setStatusMessage("");
 
     if (storeName.trim().length < 2 || storeName.trim().length > 100) {
       setErrorMessage("Nama lapak wajib diisi (2 sampai 100 karakter).");
@@ -93,7 +93,7 @@ export default function SellerStoreForm({ initialStore }) {
         setPreviewUrl(data.store.store_image_url);
       }
       setImageFile(null);
-      setStatusMessage(data?.message || "Profil lapak berhasil diperbarui.");
+      showSuccess(data?.message || "Profil lapak berhasil diperbarui.");
       setSaving(false);
       router.refresh();
     } catch {
@@ -105,19 +105,9 @@ export default function SellerStoreForm({ initialStore }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-[760px] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-6"
+      className="w-full rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-6"
     >
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
-
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
@@ -180,14 +170,14 @@ export default function SellerStoreForm({ initialStore }) {
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start border-t border-[#E2E8F0] pt-5">
         <div className="sm:col-span-5">
           <p className="mb-2 text-[14px] font-medium text-[#475569]">
-            Foto / Logo Lapak (4:3)
+            Foto / Logo Lapak
           </p>
-          <div className="aspect-[4/3] w-full rounded-md border border-[#E2E8F0] bg-[#F1F5F9] overflow-hidden">
+          <div className="h-36 w-36 rounded-full border border-[#E2E8F0] bg-[#F1F5F9] overflow-hidden">
             <Image
               src={previewUrl}
               alt={`Foto lapak ${storeName || "mitra"}`}
-              width={400}
-              height={300}
+              width={288}
+              height={288}
               className="h-full w-full object-cover"
             />
           </div>

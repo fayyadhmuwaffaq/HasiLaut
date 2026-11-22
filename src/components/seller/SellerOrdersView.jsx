@@ -1,36 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import OrderStatusTabs from "@/components/ui/OrderStatusTabs";
+import CollapsibleOrderCard from "@/components/ui/CollapsibleOrderCard";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
-import {
-  ORDER_STATUS_META,
-  PAYMENT_METHOD_LABELS,
-  formatDateTime,
-  formatKg,
-  formatRupiah,
-} from "@/lib/format";
+import { formatDateTime, formatKg, formatRupiah } from "@/lib/format";
 
-export default function SellerOrdersView({ initialOrders }) {
+const SELLER_ORDER_TABS = [
+  { id: "all", label: "Semua" },
+  { id: "pending_payment", label: "Belum Bayar" },
+  { id: "processing", label: "Diproses" },
+  { id: "shipped", label: "Dikirim" },
+  { id: "completed", label: "Selesai" },
+  { id: "cancelled", label: "Dibatalkan" },
+];
+
+export default function SellerOrdersView({
+  initialOrders,
+  initialTab = "all",
+}) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [orders, setOrders] = useState(initialOrders);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const resolvedInitialTab = SELLER_ORDER_TABS.some((t) => t.id === initialTab)
+    ? initialTab
+    : "all";
+  const [activeTab, setActiveTab] = useState(resolvedInitialTab);
   const [busyOrderId, setBusyOrderId] = useState(null);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
-  const filteredOrders =
-    statusFilter === "all"
-      ? orders
-      : orders.filter((order) => order.status === statusFilter);
+  const tabCounts = useMemo(() => {
+    const counts = Object.fromEntries(
+      SELLER_ORDER_TABS.map((tab) => [tab.id, 0])
+    );
+    counts.all = orders.length;
+    for (const order of orders) {
+      if (Object.hasOwn(counts, order.status)) {
+        counts[order.status] += 1;
+      }
+    }
+    return counts;
+  }, [orders]);
+
+  const visibleOrders = useMemo(
+    () =>
+      activeTab === "all"
+        ? orders
+        : orders.filter((order) => order.status === activeTab),
+    [orders, activeTab]
+  );
 
   async function updateOrderStatus(order, nextStatus) {
     setBusyOrderId(order.id);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(`/api/seller/orders/${order.id}/status`, {
@@ -52,7 +78,7 @@ export default function SellerOrdersView({ initialOrders }) {
           item.id === order.id ? { ...item, status: nextStatus } : item
         )
       );
-      setStatusMessage(
+      showSuccess(
         data?.message || `Status pesanan ${order.order_code} diperbarui.`
       );
       setBusyOrderId(null);
@@ -63,6 +89,61 @@ export default function SellerOrdersView({ initialOrders }) {
       setBusyOrderId(null);
       setCancelTarget(null);
     }
+  }
+
+  function renderOrderActions(order) {
+    const isBusy = busyOrderId === order.id;
+
+    if (order.status === "pending_payment") {
+      return (
+        <>
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={() => setCancelTarget(order)}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#B91C1C] bg-[#FFFFFF] px-4 py-2 text-[15px] font-semibold text-[#B91C1C] hover:bg-[#FEF2F2] disabled:opacity-50"
+          >
+            Batalkan Pesanan
+          </button>
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={() => updateOrderStatus(order, "processing")}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
+          >
+            {isBusy ? "Memproses..." : "Proses Pesanan"}
+          </button>
+        </>
+      );
+    }
+
+    if (order.status === "processing") {
+      return (
+        <button
+          type="button"
+          disabled={isBusy}
+          onClick={() => updateOrderStatus(order, "shipped")}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
+        >
+          {isBusy ? "Memproses..." : "Kirim Pesanan"}
+        </button>
+      );
+    }
+
+    if (order.status === "shipped") {
+      return (
+        <button
+          type="button"
+          disabled={isBusy}
+          onClick={() => updateOrderStatus(order, "completed")}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
+        >
+          {isBusy ? "Memproses..." : "Tandai Selesai"}
+        </button>
+      );
+    }
+
+    return null;
   }
 
   if (orders.length === 0) {
@@ -77,95 +158,49 @@ export default function SellerOrdersView({ initialOrders }) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-[14px] text-[#475569] tabular-nums">
-          Menampilkan {filteredOrders.length} dari {orders.length} pesanan masuk
-        </p>
-
-        <div className="flex items-center gap-3">
-          <label
-            htmlFor="seller-order-filter"
-            className="text-[14px] font-medium text-[#475569]"
-          >
-            Status:
-          </label>
-          <select
-            id="seller-order-filter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-[44px] rounded-md border border-[#64748B] bg-[#FFFFFF] px-3 text-[15px] text-[#0F172A]"
-          >
-            <option value="all">Semua Status</option>
-            {Object.entries(ORDER_STATUS_META).map(([key, meta]) => (
-              <option key={key} value={key}>
-                {meta.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
+    <div className="space-y-6">
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
 
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
+      <OrderStatusTabs
+        tabs={SELLER_ORDER_TABS}
+        activeTab={activeTab}
+        counts={tabCounts}
+        ariaLabel="Klasifikasi status pesanan masuk"
+        idPrefix="seller-orders"
+        onChange={setActiveTab}
+      />
 
-      {filteredOrders.length === 0 ? (
-        <EmptyState
-          title="Tidak ada pesanan pada status ini"
-          description="Pilih Semua Status untuk melihat seluruh riwayat pesanan lapak Anda."
-          actionLabel="Tampilkan Semua Status"
-          onAction={() => setStatusFilter("all")}
-        />
-      ) : (
-        <div className="divide-y divide-[#E2E8F0] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
-          {filteredOrders.map((order) => {
-            const isBusy = busyOrderId === order.id;
-            return (
-              <article key={order.id} className="p-5 sm:p-6 space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-[18px] font-semibold text-[#0F172A] tabular-nums">
-                        {order.order_code}
-                      </h2>
-                      <StatusBadge status={order.status} />
-                    </div>
-                    <p className="text-[14px] text-[#475569]">
-                      Pembeli: {order.buyer_name}
-                      {order.buyer_phone ? ` (${order.buyer_phone})` : ""} ·{" "}
-                      {formatDateTime(order.created_at)}
-                    </p>
-                  </div>
-
-                  <div className="sm:text-right">
-                    <p className="text-[14px] text-[#475569]">
-                      {PAYMENT_METHOD_LABELS[order.payment_method] ||
-                        order.payment_method}
-                    </p>
-                    <p className="text-[20px] font-bold text-[#0284C7] tabular-nums">
-                      {formatRupiah(order.total_amount)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-md bg-[#F8FAFC] p-4 text-[14px] text-[#334155]">
-                  <p className="font-semibold text-[#0F172A] mb-1">
-                    Alamat Pengiriman Pembeli
+      <div
+        id={`seller-orders-panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`seller-orders-tab-${activeTab}`}
+        className="space-y-6"
+      >
+        {visibleOrders.length === 0 ? (
+          <EmptyState
+            title={`Tidak ada pesanan di kategori "${
+              SELLER_ORDER_TABS.find((t) => t.id === activeTab)?.label || "ini"
+            }"`}
+            description="Pilih tab Semua untuk melihat seluruh riwayat pesanan lapak Anda."
+            actionLabel="Lihat Semua Pesanan"
+            onAction={() => setActiveTab("all")}
+          />
+        ) : (
+          <div className="space-y-6">
+            {visibleOrders.map((order) => (
+              <CollapsibleOrderCard
+                key={order.id}
+                order={order}
+                addressTitle="Alamat Pengiriman Pembeli"
+                subtitle={
+                  <p className="text-[14px] text-[#475569]">
+                    Pembeli: {order.buyer_name}
+                    {order.buyer_phone ? ` (${order.buyer_phone})` : ""} ·{" "}
+                    {formatDateTime(order.created_at)}
                   </p>
-                  <p className="whitespace-pre-line">
-                    {order.shipping_address_snapshot}
-                  </p>
-                </div>
-
+                }
+                actions={renderOrderActions(order)}
+              >
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -196,56 +231,11 @@ export default function SellerOrdersView({ initialOrders }) {
                     </tbody>
                   </table>
                 </div>
-
-                <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
-                  {order.status === "pending_payment" ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={isBusy}
-                        onClick={() => setCancelTarget(order)}
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#B91C1C] bg-[#FFFFFF] px-4 py-2 text-[15px] font-semibold text-[#B91C1C] hover:bg-[#FEF2F2] disabled:opacity-50"
-                      >
-                        Batalkan Pesanan
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isBusy}
-                        onClick={() => updateOrderStatus(order, "processing")}
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
-                      >
-                        {isBusy ? "Memproses..." : "Proses Pesanan"}
-                      </button>
-                    </>
-                  ) : null}
-
-                  {order.status === "processing" ? (
-                    <button
-                      type="button"
-                      disabled={isBusy}
-                      onClick={() => updateOrderStatus(order, "shipped")}
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
-                    >
-                      {isBusy ? "Memproses..." : "Kirim Pesanan"}
-                    </button>
-                  ) : null}
-
-                  {order.status === "shipped" ? (
-                    <button
-                      type="button"
-                      disabled={isBusy}
-                      onClick={() => updateOrderStatus(order, "completed")}
-                      className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
-                    >
-                      {isBusy ? "Memproses..." : "Tandai Selesai"}
-                    </button>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+              </CollapsibleOrderCard>
+            ))}
+          </div>
+        )}
+      </div>
 
       <ConfirmDialog
         open={Boolean(cancelTarget)}

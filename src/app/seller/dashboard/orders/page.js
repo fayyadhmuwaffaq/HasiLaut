@@ -11,7 +11,7 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function SellerOrdersPage() {
+export default async function SellerOrdersPage({ searchParams }) {
   const { store, needsSessionSync, syncTarget } =
     await requireApprovedSellerPage();
 
@@ -27,6 +27,12 @@ export default async function SellerOrdersPage() {
     );
   }
 
+  const resolvedParams = await searchParams;
+  const initialTab =
+    typeof resolvedParams?.status === "string"
+      ? resolvedParams.status.trim()
+      : "all";
+
   const orders = await getSellerOrdersWithItems(store.id);
 
   return (
@@ -41,7 +47,7 @@ export default async function SellerOrdersPage() {
         </p>
       </div>
 
-      <SellerOrdersView initialOrders={orders} />
+      <SellerOrdersView initialOrders={orders} initialTab={initialTab} />
     </div>
   );
 }
