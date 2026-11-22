@@ -124,3 +124,49 @@ export function StarIcon({ size = 18, filled = false, className = "" }) {
     </svg>
   );
 }
+
+export function VerifiedIcon({ size = 22, className = "" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" fill="currentColor" />
+      <path
+        d="M8.5 12.2L10.9 14.6L15.8 9.4"
+        stroke="#FFFFFF"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function AlertIcon({ size = 18, className = "" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" fill="currentColor" />
+      <path
+        d="M12 7.5V13"
+        stroke="#FFFFFF"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="16.5" r="1.25" fill="#FFFFFF" />
+    </svg>
+  );
+}
