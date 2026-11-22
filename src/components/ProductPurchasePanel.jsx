@@ -11,10 +11,12 @@ export default function ProductPurchasePanel({
   pricePerKg,
   stockKg,
   isBuyer,
+  isActive = true,
 }) {
   const numericStock = Number(stockKg);
   const numericPrice = Number(pricePerKg);
   const isOutOfStock = !Number.isFinite(numericStock) || numericStock < 0.5;
+  const isDisabled = !isActive || isOutOfStock;
   const initialQty = numericStock >= 1 ? 1 : 0.5;
 
   const [quantityKg, setQuantityKg] = useState(initialQty);
@@ -30,7 +32,7 @@ export default function ProductPurchasePanel({
           min={0.5}
           max={isOutOfStock ? 0.5 : numericStock}
           step={0.5}
-          disabled={isOutOfStock}
+          disabled={isDisabled}
           label="Jumlah pembelian (minimal 0,5 kg)"
         />
 
@@ -47,6 +49,7 @@ export default function ProductPurchasePanel({
         productName={productName}
         stockKg={numericStock}
         isBuyer={isBuyer}
+        isActive={isActive}
         quantityKg={quantityKg}
       />
     </div>

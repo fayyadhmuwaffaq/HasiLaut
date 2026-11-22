@@ -41,6 +41,7 @@ export default async function ProductDetailPage({ params }) {
   }
 
   const { product, reviews } = detail;
+  const isActive = product.is_active !== false;
   const stockKg = Number(product.stock_kg);
   const isOutOfStock = !Number.isFinite(stockKg) || stockKg < 0.5;
   const imageSrc = product.image_url || "/placeholders/seafood-placeholder.svg";
@@ -109,10 +110,18 @@ export default async function ProductDetailPage({ params }) {
             </p>
             <p
               className={`text-[15px] font-semibold tabular-nums ${
-                isOutOfStock ? "text-[#B91C1C]" : "text-[#047857]"
+                !isActive
+                  ? "text-[#B45309]"
+                  : isOutOfStock
+                    ? "text-[#B91C1C]"
+                    : "text-[#047857]"
               }`}
             >
-              {isOutOfStock ? "Stok habis" : `Stok tersedia: ${formatKg(stockKg)}`}
+              {!isActive
+                ? "Sedang dinonaktifkan penjual"
+                : isOutOfStock
+                  ? "Stok habis"
+                  : `Stok tersedia: ${formatKg(stockKg)}`}
             </p>
           </div>
 
@@ -122,37 +131,54 @@ export default async function ProductDetailPage({ params }) {
             pricePerKg={product.price_per_kg}
             stockKg={stockKg}
             isBuyer={isBuyer}
+            isActive={isActive}
           />
 
-          <div className="border-t border-[#E2E8F0] pt-5 flex items-start gap-4">
-            <div className="h-16 w-20 shrink-0 rounded-md border border-[#E2E8F0] bg-[#F1F5F9] overflow-hidden">
-              <Image
-                src={
-                  product.store_image_url ||
-                  "/placeholders/store-placeholder.svg"
-                }
-                alt={`Foto lapak ${product.store_name}`}
-                width={160}
-                height={120}
-                className="h-full w-full object-cover"
-              />
+          <div className="border-t border-[#E2E8F0] pt-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="flex items-start gap-4 min-w-0">
+              <Link
+                href={`/stores/${product.store_id}`}
+                aria-label={`Kunjungi toko ${product.store_name}`}
+                className="h-16 w-16 shrink-0 rounded-full border border-[#E2E8F0] bg-[#F1F5F9] overflow-hidden"
+              >
+                <Image
+                  src={
+                    product.store_image_url ||
+                    "/placeholders/store-placeholder.svg"
+                  }
+                  alt={`Foto lapak ${product.store_name}`}
+                  width={128}
+                  height={128}
+                  className="h-full w-full object-cover"
+                />
+              </Link>
+              <div className="space-y-1 min-w-0">
+                <p className="text-[14px] text-[#475569]">Lapak Nelayan</p>
+                <Link
+                  href={`/stores/${product.store_id}`}
+                  className="inline-block text-[16px] font-semibold text-[#0F172A] hover:text-[#0369A1] hover:underline"
+                >
+                  {product.store_name}
+                </Link>
+                {product.dock_location ? (
+                  <p className="text-[14px] text-[#475569]">
+                    Lokasi Dermaga: {product.dock_location}
+                  </p>
+                ) : null}
+                {product.store_description ? (
+                  <p className="text-[14px] text-[#475569] max-w-[55ch]">
+                    {product.store_description}
+                  </p>
+                ) : null}
+              </div>
             </div>
-            <div className="space-y-1 min-w-0">
-              <p className="text-[14px] text-[#475569]">Lapak Nelayan</p>
-              <p className="text-[16px] font-semibold text-[#0F172A]">
-                {product.store_name}
-              </p>
-              {product.dock_location ? (
-                <p className="text-[14px] text-[#475569]">
-                  Lokasi Dermaga: {product.dock_location}
-                </p>
-              ) : null}
-              {product.store_description ? (
-                <p className="text-[14px] text-[#475569] max-w-[55ch]">
-                  {product.store_description}
-                </p>
-              ) : null}
-            </div>
+
+            <Link
+              href={`/stores/${product.store_id}`}
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-md border border-[#0369A1] bg-[#FFFFFF] px-4 py-2 text-[14px] font-semibold text-[#0369A1] hover:bg-[#F0F9FF] transition-colors self-start"
+            >
+              Kunjungi Toko
+            </Link>
           </div>
         </div>
       </section>

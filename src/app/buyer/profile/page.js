@@ -22,8 +22,8 @@ export default async function BuyerProfilePage() {
           Profil & Alamat Pengiriman
         </h1>
         <p className="text-[16px] text-[#475569]">
-          Perbarui nama, nomor telepon, alamat tujuan pengiriman, dan kata sandi
-          akun Anda.
+          Perbarui nama, email masuk, nomor telepon, alamat tujuan pengiriman,
+          dan kata sandi akun Anda.
         </p>
       </div>
 
@@ -34,29 +34,28 @@ export default async function BuyerProfilePage() {
           phone_number: user.phone_number || "",
         }}
         initialAddresses={addresses}
+        securitySection={
+          <section
+            aria-labelledby="buyer-password-heading"
+            className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-5"
+          >
+            <div className="space-y-1">
+              <h2
+                id="buyer-password-heading"
+                className="text-[20px] font-semibold text-[#0F172A]"
+              >
+                Keamanan Akun & Kata Sandi
+              </h2>
+              <p className="text-[15px] text-[#475569]">
+                Ganti kata sandi akun Pembeli Anda kapan saja. Sesi aktif tetap
+                berjalan setelah perubahan disimpan.
+              </p>
+            </div>
+
+            <ChangePasswordForm idPrefix="buyer-pw" />
+          </section>
+        }
       />
-
-      <section
-        aria-labelledby="buyer-password-heading"
-        className="border-t border-[#E2E8F0] pt-10"
-      >
-        <div className="max-w-[680px] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-5">
-          <div className="space-y-1">
-            <h2
-              id="buyer-password-heading"
-              className="text-[20px] font-semibold text-[#0F172A]"
-            >
-              Keamanan Akun & Kata Sandi
-            </h2>
-            <p className="text-[15px] text-[#475569]">
-              Ganti kata sandi akun Pembeli Anda kapan saja. Sesi aktif tetap
-              berjalan setelah perubahan disimpan.
-            </p>
-          </div>
-
-          <ChangePasswordForm idPrefix="buyer-pw" />
-        </div>
-      </section>
     </div>
   );
 }

@@ -5,11 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QuantityStepper from "@/components/ui/QuantityStepper";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { formatKg, formatRupiah } from "@/lib/format";
 
 export default function CartCheckoutView({ initialCart, addresses }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [items, setItems] = useState(initialCart.items);
   const defaultAddress =
     addresses.find((addr) => addr.is_default) || addresses[0] || null;
@@ -20,7 +22,6 @@ export default function CartCheckoutView({ initialCart, addresses }) {
   const [busyItemId, setBusyItemId] = useState(null);
   const [submittingCheckout, setSubmittingCheckout] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
 
   const totalAmount =
     Math.round(items.reduce((sum, item) => sum + item.subtotal, 0) * 100) / 100;
@@ -46,7 +47,6 @@ export default function CartCheckoutView({ initialCart, addresses }) {
 
   async function handleQuantityChange(itemId, nextKg) {
     setErrorMessage("");
-    setStatusMessage("");
     setBusyItemId(itemId);
 
     try {
@@ -74,11 +74,12 @@ export default function CartCheckoutView({ initialCart, addresses }) {
             quantity_kg: updatedQty,
             subtotal: data.item.subtotal,
             is_available:
-              item.seller_status === "approved" && item.stock_kg >= updatedQty,
+              item.seller_status === "approved" &&
+              item.is_active !== false &&
+              item.stock_kg >= updatedQty,
           };
         })
       );
-      setStatusMessage("Jumlah item keranjang diperbarui.");
       setBusyItemId(null);
       router.refresh();
     } catch {
@@ -89,7 +90,6 @@ export default function CartCheckoutView({ initialCart, addresses }) {
 
   async function handleRemoveItem(itemId, productName) {
     setErrorMessage("");
-    setStatusMessage("");
     setBusyItemId(itemId);
 
     try {
@@ -105,7 +105,7 @@ export default function CartCheckoutView({ initialCart, addresses }) {
       }
 
       setItems((prev) => prev.filter((item) => item.id !== itemId));
-      setStatusMessage(`${productName} dihapus dari keranjang.`);
+      showSuccess(`${productName} dihapus dari keranjang.`);
       setBusyItemId(null);
       router.refresh();
     } catch {
@@ -117,7 +117,6 @@ export default function CartCheckoutView({ initialCart, addresses }) {
   async function handleCheckout(event) {
     event.preventDefault();
     setErrorMessage("");
-    setStatusMessage("");
 
     if (!selectedAddressId) {
       setErrorMessage("Pilih atau tambahkan alamat pengiriman terlebih dahulu.");
@@ -167,16 +166,6 @@ export default function CartCheckoutView({ initialCart, addresses }) {
     <div className="space-y-6">
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
 
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
-
       {storeGroups.length > 1 ? (
         <div
           role="status"
@@ -197,7 +186,12 @@ export default function CartCheckoutView({ initialCart, addresses }) {
             >
               <div className="border-b border-[#E2E8F0] bg-[#F8FAFC] px-5 py-3.5">
                 <h2 className="text-[17px] font-semibold text-[#0F172A]">
-                  {group.storeName}
+                  <Link
+                    href={`/stores/${group.storeId}`}
+                    className="inline-flex min-h-[44px] items-center hover:text-[#0369A1] hover:underline"
+                  >
+                    {group.storeName}
+                  </Link>
                 </h2>
                 {group.dockLocation ? (
                   <p className="text-[14px] text-[#475569]">
@@ -250,8 +244,9 @@ export default function CartCheckoutView({ initialCart, addresses }) {
 
                         {!item.is_available ? (
                           <p className="text-[14px] font-medium text-[#B91C1C]">
-                            Jumlah melebihi sisa stok atau lapak sedang tidak
-                            aktif. Sesuaikan berat atau hapus item.
+                            {item.is_active === false
+                              ? "Produk sedang dinonaktifkan oleh penjual. Hapus item untuk melanjutkan checkout."
+                              : "Jumlah melebihi sisa stok atau lapak sedang tidak aktif. Sesuaikan berat atau hapus item."}
                           </p>
                         ) : null}
 
@@ -265,7 +260,11 @@ export default function CartCheckoutView({ initialCart, addresses }) {
                             min={0.5}
                             max={Math.max(0.5, item.stock_kg)}
                             step={0.5}
-                            disabled={isBusy || item.stock_kg < 0.5}
+                            disabled={
+                              isBusy ||
+                              item.stock_kg < 0.5 ||
+                              item.is_active === false
+                            }
                             label={`Jumlah ${item.product_name} (Kg)`}
                             hideLabel
                           />

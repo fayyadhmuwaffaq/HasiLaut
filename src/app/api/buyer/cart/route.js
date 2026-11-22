@@ -43,6 +43,7 @@ export async function GET() {
            p.name AS product_name,
            p.price_per_kg,
            p.stock_kg,
+           p.is_active,
            p.image_url,
            s.id AS store_id,
            s.store_name,
@@ -67,7 +68,10 @@ export async function GET() {
           quantity_kg: quantityKg,
           stock_kg: stockKg,
           subtotal: Math.round(pricePerKg * quantityKg * 100) / 100,
-          is_available: row.seller_status === "approved" && stockKg >= quantityKg,
+          is_available:
+            row.seller_status === "approved" &&
+            row.is_active !== false &&
+            stockKg >= quantityKg,
         };
       });
 
@@ -138,7 +142,7 @@ export async function POST(request) {
       const cartId = cartRes.rows[0].id;
 
       const productRes = await client.query(
-        `SELECT p.id, p.name, p.stock_kg, p.price_per_kg, u.seller_status
+        `SELECT p.id, p.name, p.stock_kg, p.price_per_kg, p.is_active, u.seller_status
          FROM products p
          INNER JOIN stores s ON s.id = p.store_id
          INNER JOIN users u ON u.id = s.seller_id
@@ -152,6 +156,13 @@ export async function POST(request) {
         throw new CartActionError(
           "Produk tidak ditemukan atau belum tersedia untuk dibeli.",
           404
+        );
+      }
+
+      if (!product.is_active) {
+        throw new CartActionError(
+          "Produk sedang dinonaktifkan oleh penjual.",
+          400
         );
       }
 
@@ -200,7 +211,7 @@ export async function POST(request) {
       );
 
       return {
-        message: `${product.name} (${formatKg(requestedKg)}) ditambahkan ke keranjang.`,
+        message: `${product.name} ditambahkan ke keranjang`,
         item: upsertRes.rows[0],
         cartCount: countRes.rows[0]?.count ?? 0,
       };

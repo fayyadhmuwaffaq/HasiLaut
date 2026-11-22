@@ -53,6 +53,7 @@ export async function PATCH(request, context) {
            p.name AS product_name,
            p.stock_kg,
            p.price_per_kg,
+           p.is_active,
            u.seller_status
          FROM cart_items ci
          INNER JOIN carts c ON c.id = ci.cart_id
@@ -69,9 +70,11 @@ export async function PATCH(request, context) {
         throw new CartItemError("Item keranjang tidak ditemukan.", 404);
       }
 
-      if (item.seller_status !== "approved") {
+      if (item.seller_status !== "approved" || !item.is_active) {
         throw new CartItemError(
-          "Produk dari lapak ini sedang tidak tersedia.",
+          item.seller_status !== "approved"
+            ? "Produk dari lapak ini sedang tidak tersedia."
+            : "Produk sedang dinonaktifkan oleh penjual.",
           400
         );
       }

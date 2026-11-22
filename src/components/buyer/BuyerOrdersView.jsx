@@ -1,27 +1,71 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import OrderStatusTabs from "@/components/ui/OrderStatusTabs";
+import CollapsibleOrderCard from "@/components/ui/CollapsibleOrderCard";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { CloseIcon, StarIcon } from "@/components/ui/Icons";
-import {
-  PAYMENT_METHOD_LABELS,
-  formatDateTime,
-  formatKg,
-  formatRupiah,
-} from "@/lib/format";
+import { formatDateTime, formatKg, formatRupiah } from "@/lib/format";
+
+const BUYER_ORDER_TABS = [
+  { id: "all", label: "Semua" },
+  { id: "processing", label: "Diproses" },
+  { id: "shipped", label: "Dikirim" },
+  { id: "completed", label: "Selesai" },
+  { id: "unreviewed", label: "Belum Dinilai" },
+  { id: "cancelled", label: "Dibatalkan" },
+];
+
+function matchesOrderTab(order, tabId) {
+  switch (tabId) {
+    case "processing":
+      return (
+        order.status === "pending_payment" || order.status === "processing"
+      );
+    case "shipped":
+      return order.status === "shipped";
+    case "completed":
+      return order.status === "completed";
+    case "unreviewed":
+      return (
+        order.status === "completed" &&
+        Array.isArray(order.items) &&
+        order.items.some((item) => !item.review_id)
+      );
+    case "cancelled":
+      return order.status === "cancelled";
+    default:
+      return true;
+  }
+}
 
 export default function BuyerOrdersView({
   initialOrders,
   checkoutSuccessCount = 0,
+  initialTab = "all",
 }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
   const [orders, setOrders] = useState(initialOrders);
+  const resolvedInitialTab = BUYER_ORDER_TABS.some((t) => t.id === initialTab)
+    ? initialTab
+    : "all";
+  const [activeTab, setActiveTab] = useState(resolvedInitialTab);
   const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
+  const shownCheckoutToastRef = useRef(false);
+
+  useEffect(() => {
+    if (checkoutSuccessCount > 0 && !shownCheckoutToastRef.current) {
+      shownCheckoutToastRef.current = true;
+      showSuccess(
+        `${checkoutSuccessCount} pesanan berhasil dibuat. Pantau perkembangan status pengiriman Anda di bawah ini.`
+      );
+    }
+  }, [checkoutSuccessCount, showSuccess]);
 
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
@@ -34,6 +78,118 @@ export default function BuyerOrdersView({
 
   const reviewTitleId = useId();
   const closeReviewRef = useRef(null);
+  const [expandedOrderIds, setExpandedOrderIds] = useState(() => new Set());
+
+  function setOrderExpanded(orderId, expanded) {
+    setExpandedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (expanded) {
+        next.add(orderId);
+      } else {
+        next.delete(orderId);
+      }
+      return next;
+    });
+  }
+
+  const tabCounts = useMemo(() => {
+    const counts = Object.fromEntries(
+      BUYER_ORDER_TABS.map((tab) => [tab.id, 0])
+    );
+    for (const order of orders) {
+      for (const tab of BUYER_ORDER_TABS) {
+        if (matchesOrderTab(order, tab.id)) {
+          counts[tab.id] += 1;
+        }
+      }
+    }
+    return counts;
+  }, [orders]);
+
+  const visibleOrders = useMemo(
+    () => orders.filter((order) => matchesOrderTab(order, activeTab)),
+    [orders, activeTab]
+  );
+
+  function renderOrderSummaryNote(order) {
+    if (
+      order.payment_method === "bank_transfer" &&
+      order.status === "pending_payment"
+    ) {
+      return (
+        <p className="text-[13px] font-medium text-[#B45309]">
+          Transfer bank manual: buka Lihat Detail untuk instruksi pembayaran.
+        </p>
+      );
+    }
+
+    if (order.status === "completed" && Array.isArray(order.items)) {
+      const unreviewedCount = order.items.filter(
+        (item) => !item.review_id
+      ).length;
+      if (unreviewedCount > 0) {
+        return (
+          <p className="text-[13px] font-medium text-[#B45309]">
+            {unreviewedCount} produk belum diberi ulasan.
+          </p>
+        );
+      }
+    }
+
+    return null;
+  }
+
+  function renderOrderActions(order, isExpanded) {
+    if (order.status === "pending_payment") {
+      return (
+        <button
+          type="button"
+          onClick={() => setCancelTarget(order)}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#B91C1C] bg-[#FFFFFF] px-4 py-2 text-[15px] font-semibold text-[#B91C1C] hover:bg-[#FEF2F2]"
+        >
+          Batalkan Pesanan
+        </button>
+      );
+    }
+
+    if (order.status === "completed" && Array.isArray(order.items)) {
+      const unreviewedItems = order.items.filter((item) => !item.review_id);
+      if (unreviewedItems.length === 1) {
+        return (
+          <button
+            type="button"
+            onClick={() => openReviewModal(unreviewedItems[0])}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-4 py-2 text-[14px] font-semibold text-[#FFFFFF] hover:bg-[#075985]"
+          >
+            Beri Rating & Ulasan
+          </button>
+        );
+      }
+
+      if (unreviewedItems.length > 1 && !isExpanded) {
+        return (
+          <button
+            type="button"
+            onClick={() => setOrderExpanded(order.id, true)}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-4 py-2 text-[14px] font-semibold text-[#FFFFFF] hover:bg-[#075985]"
+          >
+            Beri Ulasan ({unreviewedItems.length} produk)
+          </button>
+        );
+      }
+
+      if (unreviewedItems.length === 0 && order.items.length > 0) {
+        return (
+          <span className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#047857]">
+            <StarIcon size={15} filled />
+            <span>Sudah Diulas</span>
+          </span>
+        );
+      }
+    }
+
+    return null;
+  }
 
   useEffect(() => {
     if (!reviewItem) {
@@ -59,7 +215,6 @@ export default function BuyerOrdersView({
 
     setCancelling(true);
     setErrorMessage("");
-    setStatusMessage("");
 
     try {
       const response = await fetch(
@@ -84,7 +239,7 @@ export default function BuyerOrdersView({
             : order
         )
       );
-      setStatusMessage(data?.message || "Pesanan berhasil dibatalkan.");
+      showSuccess(data?.message || "Pesanan berhasil dibatalkan.");
       setCancelling(false);
       setCancelTarget(null);
       router.refresh();
@@ -144,7 +299,7 @@ export default function BuyerOrdersView({
           ),
         }))
       );
-      setStatusMessage("Ulasan Anda telah dipublikasikan.");
+      showSuccess("Ulasan Anda telah dipublikasikan.");
       setSubmittingReview(false);
       setReviewItem(null);
       router.refresh();
@@ -167,164 +322,154 @@ export default function BuyerOrdersView({
 
   return (
     <div className="space-y-6">
-      {checkoutSuccessCount > 0 ? (
-        <div
-          role="status"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {checkoutSuccessCount} pesanan berhasil dibuat. Pantau perkembangan
-          status pengiriman Anda di bawah ini.
-        </div>
-      ) : null}
-
       {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
 
-      {statusMessage ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-        >
-          {statusMessage}
-        </p>
-      ) : null}
+      <OrderStatusTabs
+        tabs={BUYER_ORDER_TABS}
+        activeTab={activeTab}
+        counts={tabCounts}
+        ariaLabel="Klasifikasi status pesanan"
+        idPrefix="buyer-orders"
+        onChange={setActiveTab}
+      />
 
-      <div className="divide-y divide-[#E2E8F0] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
-        {orders.map((order) => (
-          <article key={order.id} className="p-5 sm:p-6 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-[18px] font-semibold text-[#0F172A] tabular-nums">
-                    {order.order_code}
-                  </h2>
-                  <StatusBadge status={order.status} />
-                </div>
-                <p className="text-[14px] text-[#475569]">
-                  {order.store_name}
-                  {order.dock_location ? ` · ${order.dock_location}` : ""} ·{" "}
-                  {formatDateTime(order.created_at)}
-                </p>
-              </div>
-
-              <div className="sm:text-right">
-                <p className="text-[14px] text-[#475569]">
-                  {PAYMENT_METHOD_LABELS[order.payment_method] ||
-                    order.payment_method}
-                </p>
-                <p className="text-[20px] font-bold text-[#0284C7] tabular-nums">
-                  {formatRupiah(order.total_amount)}
-                </p>
-              </div>
-            </div>
-
-            {order.payment_method === "bank_transfer" &&
-            order.status === "pending_payment" ? (
-              <div className="rounded-md border border-[#B45309]/30 bg-[#FFFBEB] p-4 text-[14px] text-[#B45309] space-y-1">
-                <p className="font-semibold">
-                  Instruksi Transfer Bank Manual
-                </p>
-                <p>
-                  Selesaikan transfer sebesar{" "}
-                  <span className="font-bold tabular-nums">
-                    {formatRupiah(order.total_amount)}
-                  </span>{" "}
-                  dan sertakan kode referensi{" "}
-                  <span className="font-bold tabular-nums">
-                    {order.order_code}
-                  </span>{" "}
-                  pada berita transfer agar lapak dapat segera memproses pesanan.
-                </p>
-              </div>
-            ) : null}
-
-            <div className="rounded-md bg-[#F8FAFC] p-4 text-[14px] text-[#334155]">
-              <p className="font-semibold text-[#0F172A] mb-1">
-                Alamat Pengiriman
-              </p>
-              <p className="whitespace-pre-line">
-                {order.shipping_address_snapshot}
-              </p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[#E2E8F0] text-[14px] font-medium text-[#475569]">
-                    <th className="py-3 pr-4">Produk</th>
-                    <th className="py-3 px-4 text-right">Berat</th>
-                    <th className="py-3 px-4 text-right">Harga / Kg</th>
-                    <th className="py-3 pl-4 text-right">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E8F0] text-[15px]">
-                  {order.items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="py-4 pr-4">
+      <div
+        id={`buyer-orders-panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`buyer-orders-tab-${activeTab}`}
+        className="space-y-6"
+      >
+        {visibleOrders.length === 0 ? (
+          <EmptyState
+            title={`Tidak ada pesanan di kategori "${
+              BUYER_ORDER_TABS.find((t) => t.id === activeTab)?.label || "ini"
+            }"`}
+            description="Pesanan yang sesuai dengan status tersebut akan tampil di sini secara otomatis."
+            actionLabel="Lihat Semua Pesanan"
+            onAction={() => setActiveTab("all")}
+          />
+        ) : (
+          <div className="space-y-6">
+            {visibleOrders.map((order) => {
+              const isExpanded = expandedOrderIds.has(order.id);
+              return (
+                <CollapsibleOrderCard
+                  key={order.id}
+                  order={order}
+                  addressTitle="Alamat Pengiriman"
+                  expanded={isExpanded}
+                  onExpandedChange={(next) => setOrderExpanded(order.id, next)}
+                  summaryNote={renderOrderSummaryNote(order)}
+                  actions={renderOrderActions(order, isExpanded)}
+                  subtitle={
+                    <p className="flex flex-wrap items-center gap-x-1.5 text-[14px] text-[#475569]">
+                      {order.store_id ? (
                         <Link
-                          href={`/products/${item.product_id}`}
-                          className="font-semibold text-[#0F172A] hover:text-[#0369A1]"
+                          href={`/stores/${order.store_id}`}
+                          className="inline-flex min-h-[44px] items-center font-medium text-[#0369A1] hover:underline"
                         >
-                          {item.product_name_snapshot}
+                          {order.store_name}
                         </Link>
-
-                        {order.status === "completed" ? (
-                          <div className="mt-2">
-                            {item.review_id ? (
-                              <div className="text-[14px] text-[#334155] space-y-0.5">
-                                <p className="inline-flex items-center gap-1 font-semibold text-[#047857] tabular-nums">
-                                  <StarIcon size={15} filled />
-                                  <span>
-                                    Ulasan terkirim: Rating {item.review_rating}{" "}
-                                    / 5
-                                  </span>
-                                </p>
-                                {item.review_comment ? (
-                                  <p className="text-[#475569]">
-                                    {item.review_comment}
-                                  </p>
-                                ) : null}
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => openReviewModal(item)}
-                                className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-4 py-2 text-[14px] font-semibold text-[#FFFFFF] hover:bg-[#075985]"
-                              >
-                                Beri Rating & Ulasan
-                              </button>
-                            )}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td className="py-4 px-4 text-right text-[#334155] tabular-nums whitespace-nowrap">
-                        {formatKg(item.quantity_kg)}
-                      </td>
-                      <td className="py-4 px-4 text-right text-[#334155] tabular-nums whitespace-nowrap">
-                        {formatRupiah(item.price_per_kg_snapshot)}
-                      </td>
-                      <td className="py-4 pl-4 text-right font-semibold text-[#0F172A] tabular-nums whitespace-nowrap">
-                        {formatRupiah(item.subtotal)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {order.status === "pending_payment" ? (
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setCancelTarget(order)}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#B91C1C] bg-[#FFFFFF] px-4 py-2 text-[15px] font-semibold text-[#B91C1C] hover:bg-[#FEF2F2]"
+                      ) : (
+                        <span>{order.store_name}</span>
+                      )}
+                      {order.dock_location ? (
+                        <span>· {order.dock_location}</span>
+                      ) : null}
+                      <span>· {formatDateTime(order.created_at)}</span>
+                    </p>
+                  }
                 >
-                  Batalkan Pesanan
-                </button>
-              </div>
-            ) : null}
-          </article>
-        ))}
+                  {order.payment_method === "bank_transfer" &&
+                  order.status === "pending_payment" ? (
+                    <div className="rounded-md border border-[#B45309]/30 bg-[#FFFBEB] p-4 text-[14px] text-[#B45309] space-y-1">
+                      <p className="font-semibold">
+                        Instruksi Transfer Bank Manual
+                      </p>
+                      <p>
+                        Selesaikan transfer sebesar{" "}
+                        <span className="font-bold tabular-nums">
+                          {formatRupiah(order.total_amount)}
+                        </span>{" "}
+                        dan sertakan kode referensi{" "}
+                        <span className="font-bold tabular-nums">
+                          {order.order_code}
+                        </span>{" "}
+                        pada berita transfer agar lapak dapat segera memproses
+                        pesanan.
+                      </p>
+                    </div>
+                  ) : null}
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#E2E8F0] text-[14px] font-medium text-[#475569]">
+                          <th className="py-3 pr-4">Produk</th>
+                          <th className="py-3 px-4 text-right">Berat</th>
+                          <th className="py-3 px-4 text-right">Harga / Kg</th>
+                          <th className="py-3 pl-4 text-right">Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0] text-[15px]">
+                        {order.items.map((item) => (
+                          <tr key={item.id}>
+                            <td className="py-4 pr-4">
+                              <Link
+                                href={`/products/${item.product_id}`}
+                                className="font-semibold text-[#0F172A] hover:text-[#0369A1]"
+                              >
+                                {item.product_name_snapshot}
+                              </Link>
+
+                              {order.status === "completed" ? (
+                                <div className="mt-2">
+                                  {item.review_id ? (
+                                    <div className="text-[14px] text-[#334155] space-y-0.5">
+                                      <p className="inline-flex items-center gap-1 font-semibold text-[#047857] tabular-nums">
+                                        <StarIcon size={15} filled />
+                                        <span>
+                                          Ulasan terkirim: Rating{" "}
+                                          {item.review_rating} / 5
+                                        </span>
+                                      </p>
+                                      {item.review_comment ? (
+                                        <p className="text-[#475569]">
+                                          {item.review_comment}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => openReviewModal(item)}
+                                      className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-4 py-2 text-[14px] font-semibold text-[#FFFFFF] hover:bg-[#075985]"
+                                    >
+                                      Beri Rating & Ulasan
+                                    </button>
+                                  )}
+                                </div>
+                              ) : null}
+                            </td>
+                            <td className="py-4 px-4 text-right text-[#334155] tabular-nums whitespace-nowrap">
+                              {formatKg(item.quantity_kg)}
+                            </td>
+                            <td className="py-4 px-4 text-right text-[#334155] tabular-nums whitespace-nowrap">
+                              {formatRupiah(item.price_per_kg_snapshot)}
+                            </td>
+                            <td className="py-4 pl-4 text-right font-semibold text-[#0F172A] tabular-nums whitespace-nowrap">
+                              {formatRupiah(item.subtotal)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CollapsibleOrderCard>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <ConfirmDialog

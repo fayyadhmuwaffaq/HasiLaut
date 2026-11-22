@@ -94,6 +94,7 @@ export async function POST(request) {
            p.name AS product_name,
            p.price_per_kg,
            p.stock_kg,
+           p.is_active,
            s.store_name,
            u.seller_status
          FROM cart_items ci
@@ -116,6 +117,13 @@ export async function POST(request) {
         if (row.seller_status !== "approved") {
           throw new CheckoutError(
             `Lapak untuk produk "${row.product_name}" sedang tidak aktif.`,
+            400
+          );
+        }
+
+        if (!row.is_active) {
+          throw new CheckoutError(
+            `Produk "${row.product_name}" sedang dinonaktifkan oleh penjual.`,
             400
           );
         }

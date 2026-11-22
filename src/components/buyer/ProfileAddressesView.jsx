@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import AccountIdentityForm from "@/components/auth/AccountIdentityForm";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 
 const EMPTY_ADDRESS_FORM = {
@@ -18,15 +20,15 @@ const EMPTY_ADDRESS_FORM = {
 export default function ProfileAddressesView({
   initialProfile,
   initialAddresses,
+  securitySection = null,
 }) {
   const router = useRouter();
+  const { showSuccess } = useToast();
 
   const [fullName, setFullName] = useState(initialProfile.full_name || "");
   const [phoneNumber, setPhoneNumber] = useState(
     initialProfile.phone_number || ""
   );
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [profileFeedback, setProfileFeedback] = useState(null);
 
   const [addresses, setAddresses] = useState(initialAddresses);
   const [formOpen, setFormOpen] = useState(false);
@@ -34,49 +36,9 @@ export default function ProfileAddressesView({
   const [addrForm, setAddrForm] = useState(EMPTY_ADDRESS_FORM);
   const [addrErrors, setAddrErrors] = useState({});
   const [savingAddr, setSavingAddr] = useState(false);
-  const [addrFeedback, setAddrFeedback] = useState(null);
+  const [addrError, setAddrError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deletingAddr, setDeletingAddr] = useState(false);
-
-  async function handleSaveProfile(event) {
-    event.preventDefault();
-    setProfileFeedback(null);
-    setSavingProfile(true);
-
-    try {
-      const response = await fetch("/api/buyer/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: fullName.trim(),
-          phone_number: phoneNumber.trim(),
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        setProfileFeedback({
-          type: "error",
-          message: data?.error || "Gagal menyimpan profil.",
-        });
-        setSavingProfile(false);
-        return;
-      }
-
-      setProfileFeedback({
-        type: "success",
-        message: data?.message || "Profil berhasil diperbarui.",
-      });
-      setSavingProfile(false);
-      router.refresh();
-    } catch {
-      setProfileFeedback({
-        type: "error",
-        message: "Terjadi kendala jaringan saat memperbarui profil.",
-      });
-      setSavingProfile(false);
-    }
-  }
 
   function openAddAddressForm() {
     setEditingId(null);
@@ -87,7 +49,7 @@ export default function ProfileAddressesView({
       is_default: addresses.length === 0,
     });
     setAddrErrors({});
-    setAddrFeedback(null);
+    setAddrError("");
     setFormOpen(true);
   }
 
@@ -103,14 +65,14 @@ export default function ProfileAddressesView({
       is_default: Boolean(addr.is_default),
     });
     setAddrErrors({});
-    setAddrFeedback(null);
+    setAddrError("");
     setFormOpen(true);
   }
 
   async function handleSaveAddress(event) {
     event.preventDefault();
     setAddrErrors({});
-    setAddrFeedback(null);
+    setAddrError("");
     setSavingAddr(true);
 
     const url = editingId
@@ -130,10 +92,7 @@ export default function ProfileAddressesView({
         if (data?.fieldErrors) {
           setAddrErrors(data.fieldErrors);
         }
-        setAddrFeedback({
-          type: "error",
-          message: data?.error || "Gagal menyimpan alamat.",
-        });
+        setAddrError(data?.error || "Gagal menyimpan alamat.");
         setSavingAddr(false);
         return;
       }
@@ -147,22 +106,16 @@ export default function ProfileAddressesView({
       setFormOpen(false);
       setEditingId(null);
       setSavingAddr(false);
-      setAddrFeedback({
-        type: "success",
-        message: data?.message || "Alamat berhasil disimpan.",
-      });
+      showSuccess(data?.message || "Alamat berhasil disimpan.");
       router.refresh();
     } catch {
-      setAddrFeedback({
-        type: "error",
-        message: "Terjadi kendala jaringan saat menyimpan alamat.",
-      });
+      setAddrError("Terjadi kendala jaringan saat menyimpan alamat.");
       setSavingAddr(false);
     }
   }
 
   async function handleSetDefault(addressId) {
-    setAddrFeedback(null);
+    setAddrError("");
 
     try {
       const response = await fetch(`/api/buyer/addresses/${addressId}`, {
@@ -173,10 +126,7 @@ export default function ProfileAddressesView({
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setAddrFeedback({
-          type: "error",
-          message: data?.error || "Gagal mengubah alamat utama.",
-        });
+        setAddrError(data?.error || "Gagal mengubah alamat utama.");
         return;
       }
 
@@ -185,16 +135,10 @@ export default function ProfileAddressesView({
           .map((addr) => ({ ...addr, is_default: addr.id === addressId }))
           .sort((a, b) => Number(b.is_default) - Number(a.is_default))
       );
-      setAddrFeedback({
-        type: "success",
-        message: "Alamat utama berhasil diperbarui.",
-      });
+      showSuccess("Alamat utama berhasil diperbarui.");
       router.refresh();
     } catch {
-      setAddrFeedback({
-        type: "error",
-        message: "Terjadi kendala jaringan saat memperbarui alamat utama.",
-      });
+      setAddrError("Terjadi kendala jaringan saat memperbarui alamat utama.");
     }
   }
 
@@ -204,7 +148,7 @@ export default function ProfileAddressesView({
     }
 
     setDeletingAddr(true);
-    setAddrFeedback(null);
+    setAddrError("");
 
     try {
       const response = await fetch(`/api/buyer/addresses/${deleteTarget.id}`, {
@@ -213,10 +157,7 @@ export default function ProfileAddressesView({
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setAddrFeedback({
-          type: "error",
-          message: data?.error || "Gagal menghapus alamat.",
-        });
+        setAddrError(data?.error || "Gagal menghapus alamat.");
         setDeletingAddr(false);
         setDeleteTarget(null);
         return;
@@ -232,16 +173,10 @@ export default function ProfileAddressesView({
 
       setDeletingAddr(false);
       setDeleteTarget(null);
-      setAddrFeedback({
-        type: "success",
-        message: data?.message || "Alamat berhasil dihapus.",
-      });
+      showSuccess(data?.message || "Alamat berhasil dihapus.");
       router.refresh();
     } catch {
-      setAddrFeedback({
-        type: "error",
-        message: "Terjadi kendala jaringan saat menghapus alamat.",
-      });
+      setAddrError("Terjadi kendala jaringan saat menghapus alamat.");
       setDeletingAddr(false);
       setDeleteTarget(null);
     }
@@ -249,93 +184,41 @@ export default function ProfileAddressesView({
 
   return (
     <div className="space-y-12">
-      <section className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 max-w-[680px]">
-        <h2 className="text-[20px] font-semibold text-[#0F172A]">
-          Informasi Akun Pembeli
-        </h2>
-
-        {profileFeedback ? (
-          <div className="mt-4">
-            {profileFeedback.type === "error" ? (
-              <ErrorBanner message={profileFeedback.message} />
-            ) : (
-              <p
-                role="status"
-                aria-live="polite"
-                className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-              >
-                {profileFeedback.message}
-              </p>
-            )}
-          </div>
-        ) : null}
-
-        <form onSubmit={handleSaveProfile} className="mt-5 space-y-4">
-          <div>
-            <label
-              htmlFor="profile-email"
-              className="block mb-2 text-[14px] font-medium text-[#475569]"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <section
+          aria-labelledby="buyer-identity-heading"
+          className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-5"
+        >
+          <div className="space-y-1">
+            <h2
+              id="buyer-identity-heading"
+              className="text-[20px] font-semibold text-[#0F172A]"
             >
-              Email Akun
-            </label>
-            <input
-              id="profile-email"
-              type="email"
-              value={initialProfile.email}
-              disabled
-              className="h-[44px] w-full rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 text-[16px] text-[#475569]"
-            />
+              Informasi Akun Pembeli
+            </h2>
+            <p className="text-[15px] text-[#475569]">
+              Ubah nama lengkap, email masuk, atau nomor telepon Anda.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="profile-full-name"
-                className="block mb-2 text-[14px] font-medium text-[#475569]"
-              >
-                Nama Lengkap
-              </label>
-              <input
-                id="profile-full-name"
-                type="text"
-                required
-                maxLength={100}
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                className="h-[44px] w-full rounded-md border border-[#64748B] bg-[#FFFFFF] px-3.5 text-[16px] text-[#0F172A] focus:border-[#0284C7]"
-              />
-            </div>
+          <AccountIdentityForm
+            idPrefix="profile"
+            endpoint="/api/buyer/profile"
+            initialFullName={initialProfile.full_name}
+            initialEmail={initialProfile.email}
+            initialPhone={initialProfile.phone_number}
+            showPhone
+            submitLabel="Simpan Profil"
+            defaultSuccessMessage="Profil berhasil diperbarui."
+            onSuccess={(updated) => {
+              setFullName(updated.full_name || "");
+              setPhoneNumber(updated.phone_number || "");
+            }}
+          />
+        </section>
 
-            <div>
-              <label
-                htmlFor="profile-phone"
-                className="block mb-2 text-[14px] font-medium text-[#475569]"
-              >
-                Nomor Telepon
-              </label>
-              <input
-                id="profile-phone"
-                type="tel"
-                maxLength={20}
-                placeholder="08xxxxxxxxxx"
-                value={phoneNumber}
-                onChange={(event) => setPhoneNumber(event.target.value)}
-                className="h-[44px] w-full rounded-md border border-[#64748B] bg-[#FFFFFF] px-3.5 text-[16px] text-[#0F172A] placeholder:text-[#64748B] focus:border-[#0284C7]"
-              />
-            </div>
-          </div>
-
-          <div className="pt-1">
-            <button
-              type="submit"
-              disabled={savingProfile}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2.5 text-[16px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
-            >
-              {savingProfile ? "Menyimpan..." : "Simpan Profil"}
-            </button>
-          </div>
-        </form>
-      </section>
+        {securitySection}
+      </div>
 
       <section className="border-t border-[#E2E8F0] pt-10 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -357,19 +240,7 @@ export default function ProfileAddressesView({
           </button>
         </div>
 
-        {addrFeedback ? (
-          addrFeedback.type === "error" ? (
-            <ErrorBanner message={addrFeedback.message} />
-          ) : (
-            <p
-              role="status"
-              aria-live="polite"
-              className="rounded-md border border-[#047857]/30 bg-[#ECFDF5] px-4 py-3 text-[15px] font-medium text-[#047857]"
-            >
-              {addrFeedback.message}
-            </p>
-          )
-        ) : null}
+        {addrError ? <ErrorBanner message={addrError} /> : null}
 
         {formOpen ? (
           <form

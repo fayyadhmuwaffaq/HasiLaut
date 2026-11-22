@@ -16,6 +16,8 @@ export default async function BuyerOrdersPage({ searchParams }) {
     resolved?.checkout === "1"
       ? Math.max(1, Number.parseInt(resolved?.count || "1", 10) || 1)
       : 0;
+  const initialTab =
+    typeof resolved?.status === "string" ? resolved.status.trim() : "all";
 
   const orders = await getBuyerOrdersWithItems(user.id);
 
@@ -34,6 +36,7 @@ export default async function BuyerOrdersPage({ searchParams }) {
       <BuyerOrdersView
         initialOrders={orders}
         checkoutSuccessCount={checkoutSuccessCount}
+        initialTab={initialTab}
       />
     </div>
   );
