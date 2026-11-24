@@ -130,19 +130,6 @@ export default function SellerOrdersView({
       );
     }
 
-    if (order.status === "shipped") {
-      return (
-        <button
-          type="button"
-          disabled={isBusy}
-          onClick={() => updateOrderStatus(order, "completed")}
-          className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50"
-        >
-          {isBusy ? "Memproses..." : "Tandai Selesai"}
-        </button>
-      );
-    }
-
     return null;
   }
 
@@ -192,6 +179,14 @@ export default function SellerOrdersView({
                 key={order.id}
                 order={order}
                 addressTitle="Alamat Pengiriman Pembeli"
+                summaryNote={
+                  order.status === "shipped" ? (
+                    <p className="text-[13px] font-medium text-[#0369A1]">
+                      Pesanan telah dikirim. Menunggu konfirmasi penerimaan oleh
+                      pembeli.
+                    </p>
+                  ) : null
+                }
                 subtitle={
                   <p className="text-[14px] text-[#475569]">
                     Pembeli: {order.buyer_name}

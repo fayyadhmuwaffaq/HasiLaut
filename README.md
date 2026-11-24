@@ -5,13 +5,13 @@
     <strong>Platform E-Commerce Hasil Tangkap Laut Segar Langsung dari Nelayan &amp; Mitra Pesisir</strong>
   </p>
   <p>
-    Transaksi grosir maupun eceran dalam satuan kilogram (minimal <code>0,5 kg</code>) berbasis Next.js App Router, NextAuth v5, dan PostgreSQL Raw SQL.
+    Transaksi grosir maupun eceran dalam satuan kilogram berbasis Next.js App Router, NextAuth v5, dan PostgreSQL Raw SQL.
   </p>
 
   <p>
     <img src="https://img.shields.io/badge/Next.js-16.4.6-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16.4.6" />
     <img src="https://img.shields.io/badge/React-19.3.0-149ECA?style=flat-square&logo=react&logoColor=white" alt="React 19.3.0" />
-    <img src="https://img.shields.io/badge/PostgreSQL-Raw_SQL_(pg)-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/PostgreSQL-Raw_SQL-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
     <img src="https://img.shields.io/badge/NextAuth-v5_JWT-0F172A?style=flat-square" alt="NextAuth v5" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
   </p>

@@ -5,7 +5,7 @@ import { requireApiApprovedSeller } from "@/lib/auth-guards";
 const ALLOWED_TRANSITIONS = {
   pending_payment: new Set(["processing", "cancelled"]),
   processing: new Set(["shipped"]),
-  shipped: new Set(["completed"]),
+  shipped: new Set(),
   completed: new Set(),
   cancelled: new Set(),
 };
@@ -60,6 +60,13 @@ export async function PATCH(request, context) {
         throw new OrderTransitionError(
           "Pesanan tidak ditemukan untuk lapak Anda.",
           404
+        );
+      }
+
+      if (order.status === "shipped" && nextStatus === "completed") {
+        throw new OrderTransitionError(
+          "Konfirmasi penyelesaian pesanan hanya dapat dilakukan oleh pembeli setelah barang diterima.",
+          403
         );
       }
 

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   CartIcon,
@@ -129,6 +129,57 @@ function getFirstInitial(fullName) {
     typeof fullName === "string" ? fullName.trim().split(/\s+/)[0] : "";
   const firstChar = firstWord.charAt(0).toUpperCase();
   return firstChar || "U";
+}
+
+function NavbarSearchForm({
+  inputId,
+  inputKey,
+  defaultValue,
+  className = "",
+  onAfterSubmit,
+}) {
+  const router = useRouter();
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const keyword = String(formData.get("q") || "").trim();
+    const targetHref = keyword
+      ? `/products?q=${encodeURIComponent(keyword)}`
+      : "/products";
+    onAfterSubmit?.();
+    router.push(targetHref);
+  }
+
+  return (
+    <form
+      action="/products"
+      method="GET"
+      role="search"
+      onSubmit={handleSubmit}
+      className={`relative items-center ${className}`}
+    >
+      <label htmlFor={inputId} className="sr-only">
+        Cari hasil laut
+      </label>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-3.5 inset-y-0 flex items-center text-[#64748B]"
+      >
+        <SearchIcon size={18} />
+      </span>
+      <input
+        key={inputKey}
+        id={inputId}
+        name="q"
+        type="search"
+        enterKeyHint="search"
+        defaultValue={defaultValue}
+        placeholder="Cari ikan, udang, cumi..."
+        className="h-[44px] w-full min-w-0 rounded-md border border-[#64748B] bg-[#FFFFFF] pl-10 pr-3.5 text-[16px] text-[#0F172A] placeholder:text-[#64748B] focus:border-[#0284C7]"
+      />
+    </form>
+  );
 }
 
 function ProfileAvatarDropdown({ user, pathname }) {
@@ -334,7 +385,7 @@ export default function NavbarClient({ user, cartCount = 0 }) {
   }
 
   return (
-    <header className="w-full h-[72px] bg-[#FFFFFF] border-b border-[#E2E8F0]">
+    <header className="sticky top-0 z-40 w-full h-[72px] bg-[#FFFFFF] border-b border-[#E2E8F0]">
       <div className="max-w-[1440px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 min-w-0 flex-1">
           <Link
@@ -354,32 +405,12 @@ export default function NavbarClient({ user, cartCount = 0 }) {
           </Link>
 
           {showSearch ? (
-            <form
-              action="/products"
-              method="GET"
-              role="search"
-              className="hidden md:flex items-center flex-1 max-w-[380px] min-w-0"
-            >
-              <label htmlFor="navbar-search-desktop" className="sr-only">
-                Cari hasil laut
-              </label>
-              <input
-                key={`nav-q-desktop-${pathname}-${activeCatalogQ}`}
-                id="navbar-search-desktop"
-                name="q"
-                type="search"
-                defaultValue={activeCatalogQ}
-                placeholder="Cari ikan, udang, cumi..."
-                className="h-[44px] w-full min-w-0 rounded-l-md border border-[#64748B] bg-[#FFFFFF] px-3.5 text-[16px] text-[#0F172A] placeholder:text-[#64748B] focus:border-[#0284C7]"
-              />
-              <button
-                type="submit"
-                aria-label="Cari hasil laut"
-                className="inline-flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-r-md border border-l-0 border-[#0369A1] bg-[#0369A1] text-[#FFFFFF] hover:bg-[#075985] transition-colors"
-              >
-                <SearchIcon size={18} />
-              </button>
-            </form>
+            <NavbarSearchForm
+              inputId="navbar-search-desktop"
+              inputKey={`nav-q-desktop-${pathname}-${activeCatalogQ}`}
+              defaultValue={activeCatalogQ}
+              className="hidden md:flex flex-1 max-w-[380px] min-w-0"
+            />
           ) : null}
         </div>
 
@@ -502,33 +533,13 @@ export default function NavbarClient({ user, cartCount = 0 }) {
             </div>
 
             {showSearch ? (
-              <form
-                action="/products"
-                method="GET"
-                role="search"
-                onSubmit={() => setMenuOpen(false)}
-                className="mt-5 flex items-center"
-              >
-                <label htmlFor="navbar-search-mobile" className="sr-only">
-                  Cari hasil laut
-                </label>
-                <input
-                  key={`nav-q-mobile-${pathname}-${activeCatalogQ}`}
-                  id="navbar-search-mobile"
-                  name="q"
-                  type="search"
-                  defaultValue={activeCatalogQ}
-                  placeholder="Cari ikan, udang, cumi..."
-                  className="h-[44px] w-full min-w-0 rounded-l-md border border-[#64748B] bg-[#FFFFFF] px-3.5 text-[16px] text-[#0F172A] placeholder:text-[#64748B]"
-                />
-                <button
-                  type="submit"
-                  aria-label="Cari hasil laut"
-                  className="inline-flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-r-md border border-l-0 border-[#0369A1] bg-[#0369A1] text-[#FFFFFF] hover:bg-[#075985]"
-                >
-                  <SearchIcon size={18} />
-                </button>
-              </form>
+              <NavbarSearchForm
+                inputId="navbar-search-mobile"
+                inputKey={`nav-q-mobile-${pathname}-${activeCatalogQ}`}
+                defaultValue={activeCatalogQ}
+                className="mt-5 flex w-full"
+                onAfterSubmit={() => setMenuOpen(false)}
+              />
             ) : null}
 
             <nav aria-label="Menu navigasi seluler" className="mt-5 flex flex-col gap-2">

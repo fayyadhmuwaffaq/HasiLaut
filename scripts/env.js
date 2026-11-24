@@ -2,9 +2,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { Pool } = require("pg");
 
-/**
- * Load key=value pairs from .env.local and .env without overriding shell env.
- */
 function loadEnvFiles(rootDir = process.cwd()) {
   const candidates = [".env.local", ".env"];
 

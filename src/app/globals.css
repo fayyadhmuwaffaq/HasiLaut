@@ -17,6 +17,10 @@
 }
 
 @layer base {
+  html {
+    scroll-padding-top: 88px;
+  }
+
   html,
   body {
     background-color: #F8FAFC;

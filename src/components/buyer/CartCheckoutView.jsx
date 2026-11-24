@@ -289,7 +289,7 @@ export default function CartCheckoutView({ initialCart, addresses }) {
           ))}
         </div>
 
-        <aside className="lg:col-span-4 rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-5 sm:p-6">
+        <aside className="lg:col-span-4 lg:sticky lg:top-[92px] lg:max-h-[calc(100vh-112px)] lg:overflow-y-auto rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-5 sm:p-6">
           <h2 className="text-[20px] font-semibold text-[#0F172A]">
             Ringkasan Checkout
           </h2>

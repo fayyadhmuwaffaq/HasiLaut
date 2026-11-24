@@ -69,6 +69,8 @@ export default function BuyerOrdersView({
 
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [completeTarget, setCompleteTarget] = useState(null);
+  const [completing, setCompleting] = useState(false);
 
   const [reviewItem, setReviewItem] = useState(null);
   const [rating, setRating] = useState(5);
@@ -123,6 +125,15 @@ export default function BuyerOrdersView({
       );
     }
 
+    if (order.status === "shipped") {
+      return (
+        <p className="text-[13px] font-medium text-[#0369A1]">
+          Pesanan sedang dalam pengiriman. Tekan Pesanan Diterima setelah barang
+          sampai.
+        </p>
+      );
+    }
+
     if (order.status === "completed" && Array.isArray(order.items)) {
       const unreviewedCount = order.items.filter(
         (item) => !item.review_id
@@ -148,6 +159,19 @@ export default function BuyerOrdersView({
           className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#B91C1C] bg-[#FFFFFF] px-4 py-2 text-[15px] font-semibold text-[#B91C1C] hover:bg-[#FEF2F2]"
         >
           Batalkan Pesanan
+        </button>
+      );
+    }
+
+    if (order.status === "shipped") {
+      return (
+        <button
+          type="button"
+          disabled={completing && completeTarget?.id === order.id}
+          onClick={() => setCompleteTarget(order)}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] disabled:opacity-50 transition-colors"
+        >
+          Pesanan Diterima
         </button>
       );
     }
@@ -247,6 +271,48 @@ export default function BuyerOrdersView({
       setErrorMessage("Terjadi kendala jaringan saat membatalkan pesanan.");
       setCancelling(false);
       setCancelTarget(null);
+    }
+  }
+
+  async function handleConfirmComplete() {
+    if (!completeTarget) {
+      return;
+    }
+
+    setCompleting(true);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/buyer/orders/${completeTarget.id}/complete`,
+        {
+          method: "POST",
+        }
+      );
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setErrorMessage(data?.error || "Gagal menyelesaikan pesanan.");
+        setCompleting(false);
+        setCompleteTarget(null);
+        return;
+      }
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === completeTarget.id
+            ? { ...order, status: "completed" }
+            : order
+        )
+      );
+      showSuccess(data?.message || "Pesanan dikonfirmasi selesai.");
+      setCompleting(false);
+      setCompleteTarget(null);
+      router.refresh();
+    } catch {
+      setErrorMessage("Terjadi kendala jaringan saat menyelesaikan pesanan.");
+      setCompleting(false);
+      setCompleteTarget(null);
     }
   }
 
@@ -484,6 +550,19 @@ export default function BuyerOrdersView({
         loading={cancelling}
         onConfirm={handleConfirmCancel}
         onClose={() => setCancelTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(completeTarget)}
+        title="Konfirmasi Pesanan Diterima"
+        description={`Pastikan seluruh produk pada pesanan ${
+          completeTarget?.order_code || ""
+        } sudah Anda terima dalam kondisi baik. Setelah dikonfirmasi selesai, Anda dapat langsung memberi rating & ulasan.`}
+        confirmLabel="Ya, Pesanan Diterima"
+        cancelLabel="Belum"
+        loading={completing}
+        onConfirm={handleConfirmComplete}
+        onClose={() => setCompleteTarget(null)}
       />
 
       {reviewItem ? (
