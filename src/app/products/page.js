@@ -93,7 +93,7 @@ export default async function ProductsCatalogPage({ searchParams }) {
   const filterKey = `${q}|${category}|${initialFilters.minPrice}|${initialFilters.maxPrice}|${sort}`;
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
       <div className="space-y-2">
         <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-[#0F172A]">
           Katalog Hasil Laut
@@ -123,7 +123,7 @@ export default async function ProductsCatalogPage({ searchParams }) {
 
       {catalog.products.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {catalog.products.map((product, index) => (
               <ProductCard
                 key={product.id}

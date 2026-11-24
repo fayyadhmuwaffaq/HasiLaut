@@ -335,7 +335,7 @@ export default function NavbarClient({ user, cartCount = 0 }) {
 
   return (
     <header className="w-full h-[72px] bg-[#FFFFFF] border-b border-[#E2E8F0]">
-      <div className="max-w-[1200px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      <div className="max-w-[1440px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 min-w-0 flex-1">
           <Link
             href={homeHref}

@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function NotFoundPage() {
   return (
-    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 py-16">
       <div className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-4">
         <h1 className="text-[28px] font-bold tracking-tight text-[#0F172A]">
           Halaman Tidak Ditemukan

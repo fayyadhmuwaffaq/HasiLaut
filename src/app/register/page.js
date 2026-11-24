@@ -16,7 +16,7 @@ export default async function RegisterPage() {
   }
 
   return (
-    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <RegisterForm />
     </section>
   );

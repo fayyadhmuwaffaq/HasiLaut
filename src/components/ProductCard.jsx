@@ -73,7 +73,7 @@ export default function ProductCard({
           <p className="mt-1 text-[14px] text-[#475569]">{storeMeta}</p>
         )}
 
-        <div className="mt-4 pt-3 border-t border-[#E2E8F0] flex items-baseline justify-between gap-3">
+        <div className="mt-4 pt-3 border-t border-[#E2E8F0] flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <p className="tabular-nums">
             <span className="text-[20px] font-bold text-[#0284C7]">
               {formatRupiah(product.price_per_kg)}

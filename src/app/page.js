@@ -14,10 +14,10 @@ export default async function HomePage() {
   }
 
   const isBuyer = user?.role === "buyer";
-  const featuredProducts = await getPublicFeaturedProducts({ limit: 6 });
+  const featuredProducts = await getPublicFeaturedProducts({ limit: 8 });
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-14 sm:space-y-16">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-12 sm:py-16 space-y-14 sm:space-y-16">
       <section className="max-w-[780px] space-y-6">
         <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-[#0F172A] leading-tight">
           Hasil Laut Segar Langsung dari Nelayan & Mitra Pesisir
@@ -70,7 +70,7 @@ export default async function HomePage() {
         </div>
 
         {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((product, index) => (
               <ProductCard
                 key={product.id}

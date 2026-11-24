@@ -18,11 +18,11 @@ export default async function BuyerHomePage() {
   const user = await requireRolePage(["buyer"]);
   const [categories, recommendedProducts] = await Promise.all([
     getAllCategories(),
-    getBuyerRecommendedProducts({ limit: 6 }),
+    getBuyerRecommendedProducts({ limit: 8 }),
   ]);
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-12">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-12">
       <section className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-6">
         <div className="space-y-2">
           <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-[#0F172A]">
@@ -74,7 +74,7 @@ export default async function BuyerHomePage() {
         </div>
 
         {recommendedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {recommendedProducts.map((product, index) => (
               <ProductCard
                 key={product.id}

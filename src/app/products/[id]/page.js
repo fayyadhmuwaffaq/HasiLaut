@@ -47,7 +47,7 @@ export default async function ProductDetailPage({ params }) {
   const imageSrc = product.image_url || "/placeholders/seafood-placeholder.svg";
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-12">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-12">
       <nav aria-label="Breadcrumb" className="text-[14px] text-[#475569] flex flex-wrap items-center gap-2">
         <Link href="/products" className="hover:text-[#0369A1] py-1">
           Katalog

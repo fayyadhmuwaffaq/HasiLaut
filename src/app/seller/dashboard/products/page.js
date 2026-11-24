@@ -22,7 +22,7 @@ export default async function SellerProductsPage() {
 
   if (!store) {
     return (
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-12">
         <ErrorBanner message="Profil lapak belum ditemukan." />
       </div>
     );
@@ -31,7 +31,7 @@ export default async function SellerProductsPage() {
   const products = await getSellerProducts(store.id);
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-[#0F172A]">

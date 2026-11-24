@@ -60,7 +60,7 @@ export default async function StoreDetailPage({ params, searchParams }) {
     store.store_image_url || "/placeholders/store-placeholder.svg";
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-12">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-12">
       <nav
         aria-label="Breadcrumb"
         className="text-[14px] text-[#475569] flex flex-wrap items-center gap-2"
@@ -159,7 +159,7 @@ export default async function StoreDetailPage({ params, searchParams }) {
 
         {products.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {products.map((product, index) => (
                 <ProductCard
                   key={product.id}

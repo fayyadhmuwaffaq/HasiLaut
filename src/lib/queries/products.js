@@ -16,7 +16,7 @@ export async function getAllCategories() {
   return result.rows;
 }
 
-export async function getPublicFeaturedProducts({ limit = 6 } = {}) {
+export async function getPublicFeaturedProducts({ limit = 8 } = {}) {
   const safeLimit = Math.min(Math.max(Number(limit) || 6, 1), 24);
   const result = await query(
     `SELECT
@@ -51,7 +51,7 @@ export async function getPublicFeaturedProducts({ limit = 6 } = {}) {
   return result.rows;
 }
 
-export async function getBuyerRecommendedProducts({ limit = 6 } = {}) {
+export async function getBuyerRecommendedProducts({ limit = 8 } = {}) {
   const safeLimit = Math.min(Math.max(Number(limit) || 6, 1), 24);
   const result = await query(
     `SELECT

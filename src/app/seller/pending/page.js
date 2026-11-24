@@ -22,7 +22,7 @@ export default async function SellerPendingPage() {
   const isRejected = user.seller_status === "rejected";
 
   return (
-    <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div className="max-w-[680px] mx-auto rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <StatusBadge variant="seller" status={user.seller_status} />
