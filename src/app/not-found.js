@@ -7,11 +7,11 @@ export const metadata = {
 export default function NotFoundPage() {
   return (
     <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="max-w-[560px] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-4">
+      <div className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-6 sm:p-8 space-y-4">
         <h1 className="text-[28px] font-bold tracking-tight text-[#0F172A]">
           Halaman Tidak Ditemukan
         </h1>
-        <p className="text-[16px] text-[#475569]">
+        <p className="max-w-[65ch] text-[16px] text-[#475569]">
           Halaman atau produk yang Anda cari tidak tersedia atau telah dihapus.
         </p>
         <div className="pt-2 flex flex-wrap gap-3">

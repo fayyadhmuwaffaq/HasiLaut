@@ -83,7 +83,11 @@ ADMIN_PHONE="081100000001"
 ```
 
 ### 4. Inisialisasi Skema Database
-Jalankan seluruh perintah DDL SQL pada bagian **2. DDL Script (PostgreSQL Table Definitions)** di [schema.md](./schema.md) ke database PostgreSQL target untuk membuat seluruh enum, 10 tabel utama, constraint, dan index.
+Jalankan skrip [schema.sql](./schema.sql) ke database PostgreSQL target untuk membuat seluruh enum, 10 tabel utama, constraint, dan index:
+
+```bash
+psql -d hasilaut -f schema.sql
+```
 
 ### 5. Seeding Data Awal
 ```bash
