@@ -158,7 +158,7 @@ export default function AdminCategoriesView({ initialCategories }) {
     <div className="space-y-6">
       <form
         onSubmit={handleCreate}
-        className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-end gap-4 max-w-[680px]"
+        className="flex flex-col sm:flex-row sm:items-end gap-4 max-w-[620px]"
       >
         <div className="flex-1">
           <label

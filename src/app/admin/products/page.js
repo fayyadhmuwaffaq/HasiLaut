@@ -20,8 +20,9 @@ export default async function AdminProductsPage() {
           Moderasi Produk Platform
         </h1>
         <p className="text-[16px] text-[#475569]">
-          Periksa seluruh produk hasil laut dari semua lapak dan hapus produk
-          yang melanggar ketentuan.
+          Periksa seluruh produk hasil laut dari semua lapak, nonaktifkan atau
+          aktifkan kembali tayang produk, serta hapus produk yang melanggar
+          ketentuan.
         </p>
       </div>
 

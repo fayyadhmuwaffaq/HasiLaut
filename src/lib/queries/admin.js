@@ -105,6 +105,7 @@ export async function getAdminProducts() {
       p.price_per_kg,
       p.stock_kg,
       p.is_active,
+      p.admin_disabled,
       p.image_url,
       p.created_at,
       c.name AS category_name,

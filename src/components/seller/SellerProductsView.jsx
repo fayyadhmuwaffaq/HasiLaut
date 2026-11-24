@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import ProductStatusSwitch from "@/components/ui/ProductStatusSwitch";
 import { useToast } from "@/components/ui/ToastProvider";
 import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { formatKg, formatRupiah } from "@/lib/format";
@@ -19,6 +20,10 @@ export default function SellerProductsView({ initialProducts }) {
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleToggleActive(product) {
+    if (product.admin_disabled) {
+      return;
+    }
+
     const nextActive = product.is_active === false;
     setTogglingProductId(product.id);
     setErrorMessage("");
@@ -39,7 +44,13 @@ export default function SellerProductsView({ initialProducts }) {
 
       setProducts((prev) =>
         prev.map((item) =>
-          item.id === product.id ? { ...item, is_active: nextActive } : item
+          item.id === product.id
+            ? {
+                ...item,
+                is_active: data?.product?.is_active ?? nextActive,
+                admin_disabled: Boolean(data?.product?.admin_disabled),
+              }
+            : item
         )
       );
       showSuccess(
@@ -120,6 +131,7 @@ export default function SellerProductsView({ initialProducts }) {
             {products.map((product) => {
               const isOutOfStock = product.stock_kg < 0.5;
               const isActive = product.is_active !== false;
+              const isAdminDisabled = Boolean(product.admin_disabled);
               const isToggling = togglingProductId === product.id;
 
               return (
@@ -144,9 +156,13 @@ export default function SellerProductsView({ initialProducts }) {
                         <p className="font-semibold text-[#0F172A]">
                           {product.name}
                         </p>
-                        {!isActive ? (
+                        {!isActive && isAdminDisabled ? (
+                          <p className="text-[13px] font-medium text-[#B91C1C]">
+                            Dinonaktifkan Admin
+                          </p>
+                        ) : !isActive ? (
                           <p className="text-[13px] font-medium text-[#B45309]">
-                            Nonaktif (tersembunyi dari pembeli)
+                            Nonaktif
                           </p>
                         ) : isOutOfStock ? (
                           <p className="text-[13px] font-medium text-[#B91C1C]">
@@ -170,43 +186,34 @@ export default function SellerProductsView({ initialProducts }) {
                     {formatKg(product.stock_kg)}
                   </td>
                   <td className="py-4 px-4 whitespace-nowrap">
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={isActive}
-                      aria-label={
-                        isActive
-                          ? `Nonaktifkan produk ${product.name}`
-                          : `Aktifkan produk ${product.name}`
-                      }
-                      disabled={isToggling}
-                      onClick={() => handleToggleActive(product)}
-                      className="inline-flex min-h-[44px] items-center gap-2.5 px-1 disabled:opacity-50"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-                          isActive ? "bg-[#0369A1]" : "bg-[#CBD5E1]"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-5 w-5 rounded-full bg-[#FFFFFF] shadow-sm transition-transform ${
-                            isActive ? "translate-x-5" : "translate-x-0.5"
-                          }`}
-                        />
-                      </span>
-                      <span
-                        className={`text-[14px] font-semibold ${
-                          isActive ? "text-[#047857]" : "text-[#64748B]"
-                        }`}
-                      >
-                        {isToggling
-                          ? "Menyimpan..."
+                    <ProductStatusSwitch
+                      checked={isActive}
+                      disabled={isToggling || isAdminDisabled}
+                      onToggle={() => handleToggleActive(product)}
+                      ariaLabel={
+                        isAdminDisabled
+                          ? `Produk ${product.name} dinonaktifkan oleh Admin`
                           : isActive
-                            ? "Aktif"
-                            : "Nonaktif"}
-                      </span>
-                    </button>
+                            ? `Nonaktifkan produk ${product.name}`
+                            : `Aktifkan produk ${product.name}`
+                      }
+                      statusLabel={
+                        isToggling
+                          ? "Menyimpan..."
+                          : isAdminDisabled
+                            ? "Dikunci Admin"
+                            : isActive
+                              ? "Aktif"
+                              : "Nonaktif"
+                      }
+                      statusClassName={
+                        isAdminDisabled
+                          ? "text-[#B91C1C]"
+                          : isActive
+                            ? "text-[#047857]"
+                            : "text-[#475569]"
+                      }
+                    />
                   </td>
                   <td className="py-4 px-5 text-right whitespace-nowrap">
                     <div className="inline-flex items-center justify-end gap-2.5">

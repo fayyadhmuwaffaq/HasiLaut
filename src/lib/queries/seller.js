@@ -43,6 +43,7 @@ export async function getSellerProducts(storeId) {
        p.price_per_kg,
        p.stock_kg,
        p.is_active,
+       p.admin_disabled,
        p.image_url,
        p.created_at,
        p.updated_at,
@@ -77,6 +78,7 @@ export async function getSellerProductById(productId, storeId) {
        price_per_kg,
        stock_kg,
        is_active,
+       admin_disabled,
        image_url,
        created_at,
        updated_at

@@ -59,10 +59,7 @@ export default function CatalogFilters({ categories, initialFilters }) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-5 sm:p-6 space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       {initialFilters.q ? (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#0369A1]/25 bg-[#F0F9FF] px-3.5 py-2.5 text-[14px]">
           <p className="text-[#0F172A]">
@@ -80,8 +77,8 @@ export default function CatalogFilters({ categories, initialFilters }) {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-        <div className="lg:col-span-4">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-4">
+        <div className="w-full sm:w-[240px]">
           <label
             htmlFor="filter-category"
             className="block mb-2 text-[14px] font-medium text-[#475569]"
@@ -104,7 +101,7 @@ export default function CatalogFilters({ categories, initialFilters }) {
           </select>
         </div>
 
-        <div className="lg:col-span-4">
+        <div className="w-full sm:w-[220px]">
           <label
             htmlFor="filter-sort"
             className="block mb-2 text-[14px] font-medium text-[#475569]"
@@ -124,7 +121,7 @@ export default function CatalogFilters({ categories, initialFilters }) {
           </select>
         </div>
 
-        <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center lg:justify-end gap-3">
+        <div className="flex flex-wrap items-center gap-3 sm:ml-auto sm:justify-end">
           <button
             type="submit"
             className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-[#0369A1] px-5 py-2.5 text-[15px] font-semibold text-[#FFFFFF] hover:bg-[#075985] transition-colors whitespace-nowrap"

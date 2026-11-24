@@ -62,13 +62,23 @@ export async function PATCH(request, context) {
       );
     }
 
+    if (existing.admin_disabled && body.is_active === true) {
+      return NextResponse.json(
+        {
+          error:
+            "Produk ini dinonaktifkan oleh Admin sehingga tidak dapat diaktifkan kembali oleh penjual.",
+        },
+        { status: 403 }
+      );
+    }
+
     try {
       const toggled = await query(
         `UPDATE products
          SET is_active = $1,
              updated_at = CURRENT_TIMESTAMP
          WHERE id = $2 AND store_id = $3
-         RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, is_active, image_url, updated_at`,
+         RETURNING id, store_id, category_id, name, description, price_per_kg, stock_kg, is_active, admin_disabled, image_url, updated_at`,
         [body.is_active, existing.id, store.id]
       );
 

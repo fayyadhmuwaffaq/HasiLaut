@@ -51,6 +51,21 @@ export default async function SellerEditProductPage({ params }) {
         </p>
       </div>
 
+      {product.admin_disabled ? (
+        <div
+          role="status"
+          className="rounded-lg border border-[#F59E0B] bg-[#FFFBEB] p-4 sm:p-5 text-left"
+        >
+          <p className="text-[15px] font-semibold text-[#92400E]">
+            Produk Dinonaktifkan oleh Admin
+          </p>
+          <p className="mt-1 text-[14px] text-[#78350F]">
+            Anda masih dapat memperbarui rincian produk, namun produk ini belum
+            akan tampil di katalog pembeli sampai diaktifkan kembali oleh Admin.
+          </p>
+        </div>
+      ) : null}
+
       <SellerProductForm categories={categories} initialProduct={product} />
     </div>
   );

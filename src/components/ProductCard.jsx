@@ -18,7 +18,7 @@ export default function ProductCard({
     : product.store_name;
 
   return (
-    <article className="flex flex-col rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] overflow-hidden">
+    <article className="flex flex-col rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       <Link
         href={`/products/${product.id}`}
         className="block aspect-[4/3] w-full bg-[#F1F5F9] overflow-hidden"
