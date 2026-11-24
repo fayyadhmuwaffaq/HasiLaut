@@ -13,9 +13,7 @@ export async function getSellerOverviewStats(storeId) {
     ),
     query(
       `SELECT
-         COUNT(*) FILTER (WHERE status IN ('pending_payment', 'processing', 'shipped'))::int AS open_orders,
-         COUNT(*) FILTER (WHERE status = 'completed')::int AS completed_orders,
-         COALESCE(SUM(total_amount) FILTER (WHERE status = 'completed'), 0)::numeric AS completed_revenue
+         COUNT(*) FILTER (WHERE status IN ('pending_payment', 'processing', 'shipped'))::int AS open_orders
        FROM orders
        WHERE store_id = $1`,
       [storeId]
@@ -25,16 +23,12 @@ export async function getSellerOverviewStats(storeId) {
   const prod = prodRes.rows[0] ?? { total_products: 0, active_products: 0 };
   const ord = orderRes.rows[0] ?? {
     open_orders: 0,
-    completed_orders: 0,
-    completed_revenue: 0,
   };
 
   return {
     totalProducts: prod.total_products,
     activeProducts: prod.active_products,
     openOrders: ord.open_orders,
-    completedOrders: ord.completed_orders,
-    completedRevenue: Number(ord.completed_revenue),
   };
 }
 

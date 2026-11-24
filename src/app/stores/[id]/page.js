@@ -9,17 +9,8 @@ import { VerifiedIcon } from "@/components/ui/Icons";
 
 export const dynamic = "force-dynamic";
 
-const SORT_OPTIONS = [
-  { value: "newest", label: "Terbaru" },
-  { value: "price_asc", label: "Harga Terendah" },
-  { value: "price_desc", label: "Harga Tertinggi" },
-];
-
-function buildStoreHref(storeId, sort, page) {
+function buildStoreHref(storeId, page) {
   const params = new URLSearchParams();
-  if (sort && sort !== "newest") {
-    params.set("sort", sort);
-  }
   if (page > 1) {
     params.set("page", String(page));
   }
@@ -57,13 +48,9 @@ export default async function StoreDetailPage({ params, searchParams }) {
   const isBuyer = user?.role === "buyer";
   const { id } = await params;
   const resolved = await searchParams;
-  const sort =
-    resolved?.sort === "price_asc" || resolved?.sort === "price_desc"
-      ? resolved.sort
-      : "newest";
   const page = Math.max(1, Number.parseInt(resolved?.page || "1", 10) || 1);
 
-  const data = await getPublicStoreById(id, { sort, page, pageSize: 12 });
+  const data = await getPublicStoreById(id, { page, pageSize: 12 });
   if (!data) {
     notFound();
   }
@@ -158,41 +145,16 @@ export default async function StoreDetailPage({ params, searchParams }) {
       </section>
 
       <section aria-labelledby="store-products-heading" className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E2E8F0] pb-4">
-          <div>
-            <h2
-              id="store-products-heading"
-              className="text-[22px] font-semibold text-[#0F172A]"
-            >
-              Produk dari {store.store_name}
-            </h2>
-            <p className="mt-1 text-[14px] text-[#475569] tabular-nums">
-              Menampilkan {products.length} dari {totalCount} produk
-            </p>
-          </div>
-
-          <nav
-            aria-label="Urutkan produk toko"
-            className="flex flex-wrap items-center gap-2"
+        <div className="border-b border-[#E2E8F0] pb-4">
+          <h2
+            id="store-products-heading"
+            className="text-[22px] font-semibold text-[#0F172A]"
           >
-            {SORT_OPTIONS.map((option) => {
-              const isActive = sort === option.value;
-              return (
-                <Link
-                  key={option.value}
-                  href={buildStoreHref(store.id, option.value, 1)}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-[44px] items-center justify-center rounded-md border px-3.5 py-2 text-[14px] transition-colors ${
-                    isActive
-                      ? "border-[#0369A1] bg-[#0369A1] font-semibold text-[#FFFFFF]"
-                      : "border-[#64748B] bg-[#FFFFFF] font-medium text-[#0F172A] hover:border-[#0369A1] hover:text-[#0369A1]"
-                  }`}
-                >
-                  {option.label}
-                </Link>
-              );
-            })}
-          </nav>
+            Produk dari {store.store_name}
+          </h2>
+          <p className="mt-1 text-[14px] text-[#475569] tabular-nums">
+            Menampilkan {products.length} dari {totalCount} produk
+          </p>
         </div>
 
         {products.length > 0 ? (
@@ -216,7 +178,7 @@ export default async function StoreDetailPage({ params, searchParams }) {
               >
                 {currentPage > 1 ? (
                   <Link
-                    href={buildStoreHref(store.id, sort, currentPage - 1)}
+                    href={buildStoreHref(store.id, currentPage - 1)}
                     className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#64748B] bg-[#FFFFFF] px-4 py-2 text-[15px] font-medium text-[#0F172A] hover:border-[#0369A1] hover:text-[#0369A1]"
                   >
                     Sebelumnya
@@ -229,7 +191,7 @@ export default async function StoreDetailPage({ params, searchParams }) {
 
                 {currentPage < totalPages ? (
                   <Link
-                    href={buildStoreHref(store.id, sort, currentPage + 1)}
+                    href={buildStoreHref(store.id, currentPage + 1)}
                     className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-[#64748B] bg-[#FFFFFF] px-4 py-2 text-[15px] font-medium text-[#0F172A] hover:border-[#0369A1] hover:text-[#0369A1]"
                   >
                     Berikutnya

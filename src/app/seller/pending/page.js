@@ -3,7 +3,6 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import SignOutButton from "@/components/ui/SignOutButton";
 import DeleteRejectedAccountButton from "@/components/auth/DeleteRejectedAccountButton";
 import SessionSyncRedirect from "@/components/auth/SessionSyncRedirect";
-import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 
 export const metadata = {
   title: "Status Verifikasi Seller",
@@ -75,27 +74,6 @@ export default async function SellerPendingPage() {
             </div>
           </dl>
         </div>
-
-        <section
-          aria-labelledby="pending-password-heading"
-          className="border-t border-[#E2E8F0] pt-5"
-        >
-          <details className="group">
-            <summary
-              id="pending-password-heading"
-              className="inline-flex min-h-[44px] cursor-pointer list-none items-center rounded-md border border-[#64748B] bg-[#FFFFFF] px-4 py-2 text-[15px] font-medium text-[#0F172A] hover:border-[#0369A1] hover:text-[#0369A1]"
-            >
-              Keamanan Akun & Ubah Kata Sandi
-            </summary>
-            <div className="mt-5 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-5 space-y-4">
-              <p className="text-[14px] text-[#475569]">
-                Perbarui kata sandi akun Mitra Anda kapan saja. Sesi masuk
-                tetap berjalan setelah perubahan disimpan.
-              </p>
-              <ChangePasswordForm idPrefix="pending-pw" />
-            </div>
-          </details>
-        </section>
 
         <div className="border-t border-[#E2E8F0] pt-5 flex flex-wrap items-center gap-3">
           {isRejected ? (

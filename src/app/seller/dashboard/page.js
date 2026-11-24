@@ -70,10 +70,10 @@ export default async function SellerDashboardPage() {
       </div>
 
       <section aria-label="Ringkasan angka lapak">
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E2E8F0] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
+        <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#E2E8F0] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF]">
           <div className="p-6 space-y-1">
             <p className="text-[14px] font-medium text-[#475569]">
-              Produk Aktif (Aktif & Stok &ge; 0,5 kg)
+              Produk Aktif
             </p>
             <p className="text-[28px] font-bold text-[#0F172A] tabular-nums">
               {stats.activeProducts}
@@ -92,18 +92,6 @@ export default async function SellerDashboardPage() {
             </p>
             <p className="text-[14px] text-[#64748B]">
               Menunggu pembayaran, diproses, atau dikirim
-            </p>
-          </div>
-
-          <div className="p-6 space-y-1">
-            <p className="text-[14px] font-medium text-[#475569]">
-              Total Penjualan Selesai
-            </p>
-            <p className="text-[28px] font-bold text-[#047857] tabular-nums">
-              {formatRupiah(stats.completedRevenue)}
-            </p>
-            <p className="text-[14px] text-[#64748B] tabular-nums">
-              Dari {stats.completedOrders} pesanan selesai
             </p>
           </div>
         </div>

@@ -267,7 +267,7 @@ export async function getProductDetailById(rawId) {
  */
 export async function getPublicStoreById(
   rawId,
-  { sort = "newest", page = 1, pageSize = 12 } = {}
+  { page = 1, pageSize = 12 } = {}
 ) {
   const storeId = Number(rawId);
   if (!Number.isInteger(storeId) || storeId <= 0) {
@@ -313,7 +313,6 @@ export async function getPublicStoreById(
   const totalPages = Math.max(1, Math.ceil(totalCount / safePageSize));
   const currentPage = Math.min(requestedPage, totalPages);
   const offset = (currentPage - 1) * safePageSize;
-  const orderBySql = SORT_ORDER_SQL[sort] || SORT_ORDER_SQL.newest;
 
   const productsResult = await query(
     `SELECT
@@ -339,7 +338,7 @@ export async function getPublicStoreById(
      LEFT JOIN reviews r ON r.product_id = p.id
      WHERE s.id = $1 AND p.is_active = TRUE
      GROUP BY p.id, c.id, s.id
-     ORDER BY ${orderBySql}
+     ORDER BY p.created_at DESC, p.id DESC
      LIMIT $2 OFFSET $3`,
     [storeId, safePageSize, offset]
   );

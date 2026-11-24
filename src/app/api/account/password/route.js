@@ -11,6 +11,16 @@ export async function POST(request) {
     return error;
   }
 
+  if (user.role === "seller" && user.seller_status !== "approved") {
+    return NextResponse.json(
+      {
+        error:
+          "Perubahan kata sandi hanya tersedia setelah akun mitra disetujui oleh Admin.",
+      },
+      { status: 403 }
+    );
+  }
+
   let body;
   try {
     body = await request.json();
