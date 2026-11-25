@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "seed:admin": "node user-seed.js",
-    "seed:categories": "node scripts/seed-categories.js"
+    "lint": "eslint"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

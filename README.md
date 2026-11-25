@@ -74,28 +74,16 @@ Buat berkas `.env.local` pada root proyek dan lengkapi variabel berikut:
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/hasilaut"
 AUTH_SECRET="ganti-dengan-string-acak-yang-aman"
 AUTH_TRUST_HOST=true
-
-# Opsional untuk script seed:admin (user-seed.js)
-ADMIN_NAME="Admin HasiLaut"
-ADMIN_EMAIL="admin@hasilaut.id"
-ADMIN_PASSWORD="AdminHasiLaut123!"
-ADMIN_PHONE="081100000001"
 ```
 
-### 4. Inisialisasi Skema Database
-Jalankan skrip [schema.sql](./schema.sql) ke database PostgreSQL target untuk membuat seluruh enum, 10 tabel utama, constraint, dan index:
+### 4. Inisialisasi Skema & Data Database
+Jalankan skrip [schema.sql](./schema.sql) ke database PostgreSQL target (via `psql` maupun **pgAdmin Query Tool**) untuk membuat seluruh enum, 10 tabel utama, constraint, index, beserta data awal hasil backup:
 
 ```bash
 psql -d hasilaut -f schema.sql
 ```
 
-### 5. Seeding Data Awal
-```bash
-npm run seed:categories
-npm run seed:admin
-```
-
-### 6. Daftar Perintah Utama
+### 5. Daftar Perintah Utama
 
 | Perintah | Kegunaan |
 | :--- | :--- |
@@ -103,5 +91,3 @@ npm run seed:admin
 | `npm run lint` | Menjalankan pemeriksaan ESLint pada kode sumber |
 | `npm run build` | Membangun bundel produksi Next.js (Turbopack) |
 | `npm start` | Menjalankan server dari hasil build produksi |
-| `npm run seed:categories` | Mengisi 5 kategori awal hasil laut secara idempoten |
-| `npm run seed:admin` | Membuat atau memperbarui akun Administrator awal |
