@@ -9,9 +9,9 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/Next.js-16.4.6-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16.4.6" />
-    <img src="https://img.shields.io/badge/React-19.3.0-149ECA?style=flat-square&logo=react&logoColor=white" alt="React 19.3.0" />
-    <img src="https://img.shields.io/badge/PostgreSQL-Raw_SQL-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" />
+    <img src="https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white" alt="React 19" />
+    <img src="https://img.shields.io/badge/PostgreSQL-Raw_SQL-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL Raw SQL" />
     <img src="https://img.shields.io/badge/NextAuth-v5_JWT-0F172A?style=flat-square" alt="NextAuth v5" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
   </p>
@@ -19,44 +19,74 @@
 
 ---
 
-## Tentang Proyek
+## Demo & Tangkapan Layar
 
-**HasiLaut** menjembatani mitra nelayan dan pelaku usaha kuliner maupun rumah tangga dalam satu platform terpadu. Seluruh pencatatan produk, pemecahan pesanan multi-toko saat checkout, verifikasi mitra oleh admin, hingga pembaruan stok dirancang menggunakan transaksi PostgreSQL eksplisit agar integritas data tetap terjaga.
+- **Live Demo:** <!-- TODO: isi link demo/deployment (misal: https://hasilaut.vercel.app) -->
+- **Pratinjau Antarmuka:**
+  - <!-- TODO: tambahkan gambar katalog & detail produk (disarankan menampilkan grid katalog, filter kategori/urutan, dan halaman detail harga per kg + ulasan) -->
+  - <!-- TODO: tambahkan gambar keranjang multi-toko & checkout (disarankan menampilkan pengelompokan produk per lapak dan pemilihan alamat/metode bayar) -->
+  - <!-- TODO: tambahkan gambar dashboard seller & moderasi admin (disarankan menampilkan alur pesanan seller atau halaman moderasi produk/mitra admin) -->
+
+**Akun Demo:**
+
+| Peran | Email | Kata Sandi |
+| :--- | :--- | :--- |
+| **Admin** | <!-- TODO: isi email admin demo --> | <!-- TODO: isi kata sandi admin demo --> |
+| **Seller (Mitra Nelayan)** | <!-- TODO: isi email seller demo --> | <!-- TODO: isi kata sandi seller demo --> |
+| **Buyer (Pembeli)** | <!-- TODO: isi email buyer demo --> | <!-- TODO: isi kata sandi buyer demo --> |
 
 ---
 
-## Fitur Utama per Peran
+## Tentang Proyek
 
-| Peran | Kemampuan & Alur Utama |
-| :--- | :--- |
-| **Publik & Pembeli (`Buyer`)** | Pencarian katalog tunggal di bilah navigasi, filter kategori &amp; rentang harga, pengurutan &amp; paginasi (`/products`), detail produk beserta ulasan terverifikasi, serta halaman profil lapak nelayan (`/stores/[id]`). Mendukung keranjang belanja, multi-alamat pengiriman, checkout multi-toko otomatis (`COD` atau `Transfer Bank Manual`), pemantauan status pesanan per tab, pembatalan pesanan sebelum diproses, ulasan produk selesai, dan pengelolaan identitas/email serta kata sandi akun. |
-| **Mitra Nelayan (`Seller`)** | Pendaftaran mitra dengan alur verifikasi admin (`pending`, `approved`, `rejected`), ringkasan statistik lapak, pengelolaan profil &amp; foto dermaga, penambahan/pembaruan produk (minimal `0,5 kg`), toggle aktif/nonaktif produk tanpa menghapus riwayat pesanan, manajemen alur status pesanan masuk, serta pengelolaan identitas akun &amp; kata sandi. |
-| **Administrator (`Admin`)** | Ringkasan metrik sistem, antrean persetujuan/penolakan akun mitra nelayan, CRUD master kategori hasil laut, pengawasan seluruh produk lapak, moderasi pengguna (`buyer` dan `seller`), serta pengaturan identitas akun &amp; kata sandi admin sendiri. |
+**HasiLaut** menjembatani mitra nelayan dengan pelaku usaha kuliner dan pembeli rumah tangga dalam satu marketplace berbasis berat kilogram. Seluruh proses mulai dari pengelolaan katalog, pemecahan pesanan multi-toko saat checkout, hingga pengurangan stok dijalankan menggunakan transaksi PostgreSQL eksplisit agar konsistensi data tetap terjaga.
+
+---
+
+## Fitur per Peran
+
+### Publik & Pembeli (`Buyer`)
+- Telusuri katalog hasil laut (`/products`) dengan pencarian, filter kategori, pengurutan, dan profil lapak (`/stores/[id]`).
+- Lihat detail produk lengkap dengan harga per kilogram, sisa stok, rating rata-rata, dan ulasan pembeli.
+- Kelola keranjang belanja lintas lapak serta simpan beberapa alamat pengiriman.
+- Lakukan checkout multi-toko otomatis dengan pilihan pembayaran `COD` atau `Transfer Bank Manual`.
+- Pantau status pesanan, konfirmasi pesanan diterima, kirim ulasan, dan kelola profil akun.
+
+### Mitra Nelayan (`Seller`)
+- Daftar sebagai mitra dengan alur verifikasi admin (`pending`, `approved`, `rejected`).
+- Kelola identitas lapak, lokasi dermaga, dan foto profil toko.
+- Tambah, perbarui, atau nonaktifkan produk hasil tangkapan tanpa menghapus riwayat pesanan.
+- Proses pesanan masuk mulai dari penyiapan hingga pengiriman barang ke pembeli.
+- Pantau ringkasan statistik dan aktivitas penjualan lapak dari dashboard seller.
+
+### Administrator (`Admin`)
+- Tinjau dan verifikasi antrean pendaftaran akun mitra nelayan (setujui atau tolak).
+- Kelola master kategori hasil laut (`CRUD`) yang digunakan oleh seluruh lapak.
+- Awasi katalog platform dengan moderasi status tayang produk dan penghapusan item bermasalah.
+- Awasi daftar pengguna (`Buyer` dan `Seller`) serta pantau statistik ringkas platform.
 
 ---
 
 ## Keunggulan Teknis
 
-- **Keamanan Akses Berlapis**: Pemisahan konfigurasi autentikasi Edge-compatible (`src/auth.config.js`) dan Server Node (`src/auth.js`), gerbang awal berbasis JWT di `src/middleware.js`, serta verifikasi ulang data pengguna terkini ke PostgreSQL di `src/lib/auth-guards.js`.
-- **Checkout Multi-Toko Atomik**: Proses checkout dibungkus transaksi database (`BEGIN` / `COMMIT` / `ROLLBACK`) dengan penguncian baris deterministik (`FOR UPDATE`) untuk mencegah stok minus saat transaksi bersamaan, sekaligus memecah keranjang multi-lapak menjadi pesanan terpisah per toko.
-- **Snapshot Histori Transaksi**: Data pesanan menyimpan salinan alamat pengiriman, nama produk, dan harga per kilogram saat checkout sehingga perubahan data katalog di kemudian hari tidak mengubah nota lama.
-- **Validasi Unggahan Gambar**: Pemeriksaan ukuran maksimal `2 MB`, kesesuaian MIME type, validasi *magic bytes* header JPEG/PNG/WebP, dan penamaan acak berbasis UUID.
-- **Umpan Balik Antarmuka Terpusat**: Notifikasi sukses maupun validasi error (seperti batas stok keranjang) ditampilkan konsisten lewat *toast notification* global di pojok kanan atas.
+- **Otorisasi Berlapis**: Pemisahan sesi berbasis peran (`Buyer`, `Seller`, `Admin`) lewat JWT dan verifikasi ulang status akun terkini langsung ke database.
+- **Checkout Multi-Toko Atomik**: Pemecahan keranjang lintas lapak menjadi pesanan per toko dibungkus transaksi `BEGIN/COMMIT` dengan penguncian baris stok untuk mencegah stok minus.
+- **Snapshot Histori Transaksi**: Salinan alamat, nama produk, dan harga per kg disimpan saat checkout sehingga perubahan katalog di kemudian hari tidak mengubah riwayat nota.
+- **Validasi Unggahan Gambar Ketat**: Pemeriksaan batas ukuran file, kesesuaian MIME type, validasi *magic bytes* (JPEG/PNG/WebP), dan penamaan acak berbasis UUID.
+- **Umpan Balik Antarmuka Terpusat**: Status keberhasilan aksi maupun validasi error ditampilkan konsisten melalui notifikasi *toast* global dan pesan error terstruktur.
 
 ---
 
-## Tumpukan Teknologi
+## Tech Stack
 
-| Lapisan | Teknologi |
-| :--- | :--- |
-| **Framework & UI** | Next.js `16.4.6` (App Router, Turbopack), React `19.3.0`, Tailwind CSS `4.3.3` |
-| **Autentikasi & Keamanan** | `next-auth` `v5.0.0-beta.32` (JWT + `Credentials`), `bcrypt` (cost factor `12`) |
-| **Database** | PostgreSQL via driver `pg` (`Raw SQL` terparameter &amp; helper transaksi eksplisit) |
-| **Quality Check** | ESLint `v9` (`eslint-config-next/core-web-vitals`) |
+- **Framework & UI**: Next.js (App Router, Turbopack), React, Tailwind CSS
+- **Autentikasi & Keamanan**: NextAuth v5 (JWT + `Credentials`), `bcrypt` (cost factor `12`)
+- **Database**: PostgreSQL melalui driver `pg` (`Raw SQL` terparameter & helper transaksi eksplisit)
+- **Quality Check**: ESLint (`eslint-config-next/core-web-vitals`)
 
 ---
 
-## Panduan Menjalankan di Lokal
+## Cara Menjalankan di Lokal
 
 ### 1. Prasyarat
 - **Node.js** (disarankan v20 atau lebih baru)
@@ -69,6 +99,8 @@ npm install
 
 ### 3. Konfigurasi Variabel Lingkungan
 Buat berkas `.env.local` pada root proyek dan lengkapi variabel berikut:
+
+> **Catatan Keamanan Produksi:** Contoh di bawah hanya untuk pengembangan lokal. Wajib ganti `AUTH_SECRET`, kata sandi `DATABASE_URL`, dan `ADMIN_PASSWORD` dengan nilai acak yang kuat sebelum deployment ke produksi.
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/hasilaut"
@@ -105,3 +137,28 @@ npm run seed:admin
 | `npm start` | Menjalankan server dari hasil build produksi |
 | `npm run seed:categories` | Mengisi 5 kategori awal hasil laut secara idempoten |
 | `npm run seed:admin` | Membuat atau memperbarui akun Administrator awal |
+
+---
+
+## Struktur Folder
+
+```text
+hasilaut/
+├── public/            # Logo, aset statis, placeholder gambar, dan folder unggahan
+├── scripts/           # Helper koneksi database dan seeder kategori awal
+├── src/
+│   ├── app/           # Halaman App Router (publik, buyer, seller, admin) dan API routes
+│   ├── components/    # Komponen UI bersama dan modul antarmuka per peran
+│   ├── lib/           # Pool PostgreSQL, query SQL, auth guards, formatter, validasi upload
+│   ├── auth.config.js # Konfigurasi dasar NextAuth (Edge-compatible)
+│   ├── auth.js        # Provider Credentials dan callback sesi NextAuth
+│   └── middleware.js  # Penjaga akses rute awal berbasis peran
+├── schema.sql         # Skema DDL PostgreSQL (10 tabel, 4 enum, constraint, index)
+└── user-seed.js       # Skrip inisialisasi akun Administrator awal
+```
+
+---
+
+## Lisensi
+
+<!-- TODO: cantumkan lisensi proyek (misal: MIT License) dan tambahkan berkas LICENSE pada root repositori -->
