@@ -9,9 +9,19 @@ import { CloseIcon } from "@/components/ui/Icons";
 import { formatDateTime } from "@/lib/format";
 
 const QUICK_REJECTION_REASONS = [
-  "Data lapak atau lokasi dermaga belum lengkap dan perlu diperbaiki.",
-  "Produk atau aktivitas lapak terindikasi melanggar ketentuan platform.",
-  "Identitas pemilik atau kontak resmi lapak memerlukan klarifikasi lanjut.",
+  {
+    label: "Data lapak kurang",
+    value: "Data lapak atau lokasi dermaga belum lengkap dan perlu diperbaiki.",
+  },
+  {
+    label: "Melanggar ketentuan",
+    value:
+      "Produk atau aktivitas lapak tidak sesuai dengan ketentuan platform.",
+  },
+  {
+    label: "Perlu klarifikasi kontak",
+    value: "Data pemilik atau kontak lapak memerlukan verifikasi lebih lanjut.",
+  },
 ];
 
 export default function AdminSellerQueueView({ initialSellers }) {
@@ -320,9 +330,7 @@ export default function AdminSellerQueueView({ initialSellers }) {
                 id={dialogTitleId}
                 className="text-[20px] font-semibold text-[#0F172A]"
               >
-                {isRevokingApproved
-                  ? "Tolak & Nonaktifkan Mitra Aktif"
-                  : "Tolak Pendaftaran Mitra"}
+                {isRevokingApproved ? "Nonaktifkan Mitra" : "Tolak Mitra"}
               </h2>
               <button
                 type="button"
@@ -335,11 +343,10 @@ export default function AdminSellerQueueView({ initialSellers }) {
               </button>
             </div>
 
-            <p id={dialogDescId} className="mt-3 text-[15px] text-[#334155]">
-              Akun mitra &ldquo;{rejectTarget.store_name || ""}&rdquo; (
-              {rejectTarget.full_name || ""}) akan ditandai sebagai Ditolak,
-              seluruh produk disembunyikan, dan alasan di bawah ditampilkan kepada
-              penjual beserta kontak Admin untuk pengajuan banding.
+            <p id={dialogDescId} className="mt-2.5 text-[15px] text-[#334155]">
+              {isRevokingApproved
+                ? `Lapak "${rejectTarget.store_name || ""}" akan dinonaktifkan dan produknya disembunyikan dari pembeli.`
+                : `Pendaftaran "${rejectTarget.store_name || ""}" akan ditolak dan alasan dikirim ke penjual.`}
             </p>
 
             {isRevokingApproved &&
@@ -347,37 +354,36 @@ export default function AdminSellerQueueView({ initialSellers }) {
               (rejectTarget.active_orders_count ?? 0) > 0) ? (
               <div
                 role="status"
-                className="mt-4 rounded-md border border-[#F59E0B] bg-[#FFFBEB] p-3.5 text-[14px] text-[#92400E]"
+                className="mt-3.5 rounded-md border border-[#F59E0B] bg-[#FFFBEB] px-3.5 py-2.5 text-[14px] text-[#92400E]"
               >
-                Perhatian: Lapak ini masih memiliki{" "}
+                Lapak ini masih memiliki{" "}
                 <strong>{rejectTarget.active_products_count ?? 0}</strong> produk
                 aktif dan{" "}
                 <strong>{rejectTarget.active_orders_count ?? 0}</strong> pesanan
-                berjalan yang belum selesai. Penjual tidak dapat masuk ke
-                dashboard selama berstatus Ditolak.
+                berjalan.
               </div>
             ) : null}
 
-            <form onSubmit={handleRejectSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleRejectSubmit} className="mt-4 space-y-4">
               {rejectError ? <ErrorBanner message={rejectError} /> : null}
 
               <div className="space-y-2">
                 <p className="text-[13px] font-medium text-[#475569]">
-                  Pilih alasan cepat (opsional):
+                  Template cepat (opsional):
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {QUICK_REJECTION_REASONS.map((preset) => (
                     <button
-                      key={preset}
+                      key={preset.label}
                       type="button"
                       disabled={isRejectBusy}
                       onClick={() => {
-                        setRejectReason(preset);
+                        setRejectReason(preset.value);
                         setRejectError("");
                       }}
-                      className="inline-flex min-h-[36px] items-center rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-left text-[13px] text-[#334155] hover:border-[#0369A1] hover:text-[#0369A1] disabled:opacity-50"
+                      className="inline-flex min-h-[36px] items-center rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-[13px] font-medium text-[#334155] hover:border-[#0369A1] hover:text-[#0369A1] disabled:opacity-50"
                     >
-                      {preset}
+                      {preset.label}
                     </button>
                   ))}
                 </div>
@@ -410,7 +416,7 @@ export default function AdminSellerQueueView({ initialSellers }) {
                       setRejectError("");
                     }
                   }}
-                  placeholder="Jelaskan alasan penolakan atau perbaikan yang perlu dilakukan mitra (minimal 10 karakter)..."
+                  placeholder="Tulis alasan penolakan (min. 10 karakter)..."
                   className="w-full rounded-md border border-[#64748B] bg-[#FFFFFF] px-3.5 py-2.5 text-[15px] text-[#0F172A] focus:border-[#0284C7] disabled:bg-[#F1F5F9]"
                 />
               </div>
@@ -432,8 +438,8 @@ export default function AdminSellerQueueView({ initialSellers }) {
                   {isRejectBusy
                     ? "Memproses..."
                     : isRevokingApproved
-                      ? "Ya, Tolak & Nonaktifkan"
-                      : "Ya, Tolak Seller"}
+                      ? "Nonaktifkan Akun"
+                      : "Tolak Akun"}
                 </button>
               </div>
             </form>
