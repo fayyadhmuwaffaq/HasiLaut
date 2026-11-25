@@ -289,13 +289,13 @@ export default function CartCheckoutView({ initialCart, addresses }) {
           ))}
         </div>
 
-        <aside className="lg:col-span-4 rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-5 sm:p-6">
+        <aside className="lg:col-span-4 lg:sticky lg:top-[84px] rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] p-5">
           <h2 className="text-[20px] font-semibold text-[#0F172A]">
             Ringkasan Checkout
           </h2>
 
-          <form onSubmit={handleCheckout} className="mt-5 space-y-6">
-            <fieldset className="space-y-3">
+          <form onSubmit={handleCheckout} className="mt-4 space-y-4">
+            <fieldset className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <legend className="text-[14px] font-medium text-[#475569]">
                   Alamat Pengiriman
@@ -321,13 +321,13 @@ export default function CartCheckoutView({ initialCart, addresses }) {
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   {addresses.map((addr) => {
                     const checked = Number(selectedAddressId) === addr.id;
                     return (
                       <label
                         key={addr.id}
-                        className={`flex items-start gap-3 rounded-md border p-3.5 transition-colors ${
+                        className={`flex items-start gap-3 rounded-md border p-3 transition-colors ${
                           checked
                             ? "border-[#0369A1] bg-[#F0F9FF]"
                             : "border-[#64748B] bg-[#FFFFFF] hover:bg-[#F8FAFC]"
@@ -341,8 +341,8 @@ export default function CartCheckoutView({ initialCart, addresses }) {
                           onChange={() => setSelectedAddressId(addr.id)}
                           className="mt-1 h-4 w-4 accent-[#0369A1]"
                         />
-                        <span className="text-[14px] text-[#334155] min-w-0">
-                          <span className="block font-semibold text-[#0F172A]">
+                        <span className="text-[13px] leading-snug text-[#334155] min-w-0">
+                          <span className="block text-[14px] font-semibold text-[#0F172A]">
                             {addr.label} ({addr.recipient_name})
                           </span>
                           <span className="block mt-0.5">
@@ -360,14 +360,14 @@ export default function CartCheckoutView({ initialCart, addresses }) {
               )}
             </fieldset>
 
-            <fieldset className="space-y-3 border-t border-[#E2E8F0] pt-5">
+            <fieldset className="space-y-2.5 border-t border-[#E2E8F0] pt-4">
               <legend className="text-[14px] font-medium text-[#475569]">
                 Metode Pembayaran
               </legend>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <label
-                  className={`flex items-start gap-3 rounded-md border p-3.5 transition-colors ${
+                  className={`flex items-start gap-3 rounded-md border p-3 transition-colors ${
                     paymentMethod === "cod"
                       ? "border-[#0369A1] bg-[#F0F9FF]"
                       : "border-[#64748B] bg-[#FFFFFF] hover:bg-[#F8FAFC]"
@@ -381,8 +381,8 @@ export default function CartCheckoutView({ initialCart, addresses }) {
                     onChange={() => setPaymentMethod("cod")}
                     className="mt-1 h-4 w-4 accent-[#0369A1]"
                   />
-                  <span className="text-[14px] text-[#334155]">
-                    <span className="block font-semibold text-[#0F172A]">
+                  <span className="text-[13px] leading-snug text-[#334155]">
+                    <span className="block text-[14px] font-semibold text-[#0F172A]">
                       Bayar di Tempat (COD)
                     </span>
                     <span className="block mt-0.5">
@@ -392,7 +392,7 @@ export default function CartCheckoutView({ initialCart, addresses }) {
                 </label>
 
                 <label
-                  className={`flex items-start gap-3 rounded-md border p-3.5 transition-colors ${
+                  className={`flex items-start gap-3 rounded-md border p-3 transition-colors ${
                     paymentMethod === "bank_transfer"
                       ? "border-[#0369A1] bg-[#F0F9FF]"
                       : "border-[#64748B] bg-[#FFFFFF] hover:bg-[#F8FAFC]"
@@ -406,8 +406,8 @@ export default function CartCheckoutView({ initialCart, addresses }) {
                     onChange={() => setPaymentMethod("bank_transfer")}
                     className="mt-1 h-4 w-4 accent-[#0369A1]"
                   />
-                  <span className="text-[14px] text-[#334155]">
-                    <span className="block font-semibold text-[#0F172A]">
+                  <span className="text-[13px] leading-snug text-[#334155]">
+                    <span className="block text-[14px] font-semibold text-[#0F172A]">
                       Transfer Bank Manual
                     </span>
                     <span className="block mt-0.5">
@@ -418,7 +418,7 @@ export default function CartCheckoutView({ initialCart, addresses }) {
               </div>
 
               {paymentMethod === "bank_transfer" ? (
-                <div className="rounded-md border border-[#B45309]/30 bg-[#FFFBEB] p-3.5 text-[14px] text-[#B45309]">
+                <div className="rounded-md border border-[#B45309]/30 bg-[#FFFBEB] p-3 text-[13px] leading-snug text-[#B45309]">
                   Setelah checkout, kode pesanan dan nominal tagihan per lapak
                   akan tampil di halaman Riwayat Pesanan untuk panduan transfer
                   manual.
@@ -426,7 +426,7 @@ export default function CartCheckoutView({ initialCart, addresses }) {
               ) : null}
             </fieldset>
 
-            <div className="border-t border-[#E2E8F0] pt-5 space-y-2">
+            <div className="border-t border-[#E2E8F0] pt-4 space-y-1.5">
               <div className="flex items-baseline justify-between text-[14px] text-[#475569]">
                 <span>Jumlah pesanan diterbitkan</span>
                 <span className="font-semibold text-[#0F172A] tabular-nums">

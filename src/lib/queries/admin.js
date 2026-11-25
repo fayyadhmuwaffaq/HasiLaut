@@ -33,11 +33,16 @@ export async function getAdminSellerQueue() {
       u.email,
       u.phone_number,
       u.seller_status,
+      u.rejection_reason,
+      u.rejected_at,
       u.created_at,
       s.id AS store_id,
       s.store_name,
       s.dock_location,
-      s.description AS store_description
+      s.description AS store_description,
+      (SELECT COUNT(*)::int FROM products p WHERE p.store_id = s.id AND p.is_active = TRUE) AS active_products_count,
+      (SELECT COUNT(*)::int FROM orders o WHERE o.store_id = s.id AND o.status IN ('pending_payment', 'processing', 'shipped')) AS active_orders_count,
+      (SELECT COUNT(*)::int FROM orders o WHERE o.store_id = s.id) AS total_orders_count
     FROM users u
     INNER JOIN stores s ON s.seller_id = u.id
     WHERE u.role = 'seller'
@@ -80,6 +85,8 @@ export async function getAdminUsers() {
       u.phone_number,
       u.role,
       u.seller_status,
+      u.rejection_reason,
+      u.rejected_at,
       u.created_at,
       s.store_name,
       s.dock_location,

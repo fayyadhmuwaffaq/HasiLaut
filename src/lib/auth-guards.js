@@ -29,7 +29,7 @@ export const getSessionAuth = cache(async () => {
   }
 
   const result = await query(
-    `SELECT id, full_name, email, phone_number, role, seller_status
+    `SELECT id, full_name, email, phone_number, role, seller_status, rejection_reason, rejected_at
      FROM users
      WHERE id = $1
      LIMIT 1`,
@@ -119,6 +119,8 @@ export async function getPendingSellerState() {
       return {
         user: dbUser,
         store,
+        storeStats: { totalOrders: 0, activeOrders: 0 },
+        adminContact: null,
         needsSessionSync: true,
         syncTarget: "/seller/dashboard",
       };
@@ -126,9 +128,37 @@ export async function getPendingSellerState() {
     redirect("/seller/dashboard");
   }
 
+  const [ordersRes, adminRes] = await Promise.all([
+    store?.id
+      ? query(
+          `SELECT
+             COUNT(*)::int AS total_orders,
+             COUNT(*) FILTER (
+               WHERE status IN ('pending_payment', 'processing', 'shipped')
+             )::int AS active_orders
+           FROM orders
+           WHERE store_id = $1`,
+          [store.id]
+        )
+      : Promise.resolve({ rows: [{ total_orders: 0, active_orders: 0 }] }),
+    query(
+      `SELECT full_name, email, phone_number
+       FROM users
+       WHERE role = 'admin'
+       ORDER BY (phone_number IS NOT NULL AND phone_number <> '') DESC, id ASC
+       LIMIT 1`
+    ),
+  ]);
+
+  const orderRow = ordersRes.rows[0] ?? {};
   return {
     user: dbUser,
     store,
+    storeStats: {
+      totalOrders: orderRow.total_orders ?? 0,
+      activeOrders: orderRow.active_orders ?? 0,
+    },
+    adminContact: adminRes.rows[0] ?? null,
     needsSessionSync: false,
     syncTarget: null,
   };

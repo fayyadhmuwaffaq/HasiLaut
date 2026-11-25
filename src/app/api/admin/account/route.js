@@ -23,7 +23,7 @@ export async function PATCH(request) {
       userId: user.id,
       role: "admin",
       body,
-      includePhone: false,
+      includePhone: true,
     });
 
     if (!result.ok) {

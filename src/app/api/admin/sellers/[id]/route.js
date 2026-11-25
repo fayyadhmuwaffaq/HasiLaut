@@ -38,15 +38,41 @@ export async function PATCH(request, context) {
     );
   }
 
+  const trimmedReason =
+    typeof body?.reason === "string" ? body.reason.trim() : "";
+
+  if (nextStatus === "rejected") {
+    if (trimmedReason.length < 10 || trimmedReason.length > 500) {
+      return NextResponse.json(
+        { error: "Alasan penolakan wajib diisi (10 sampai 500 karakter)." },
+        { status: 400 }
+      );
+    }
+  }
+
   try {
-    const result = await query(
-      `UPDATE users
-       SET seller_status = $1,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2 AND role = 'seller'
-       RETURNING id, full_name, email, role, seller_status`,
-      [nextStatus, sellerId]
-    );
+    const result =
+      nextStatus === "rejected"
+        ? await query(
+            `UPDATE users
+             SET seller_status = 'rejected',
+                 rejection_reason = $1,
+                 rejected_at = CURRENT_TIMESTAMP,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $2 AND role = 'seller'
+             RETURNING id, full_name, email, role, seller_status, rejection_reason, rejected_at`,
+            [trimmedReason, sellerId]
+          )
+        : await query(
+            `UPDATE users
+             SET seller_status = 'approved',
+                 rejection_reason = NULL,
+                 rejected_at = NULL,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1 AND role = 'seller'
+             RETURNING id, full_name, email, role, seller_status, rejection_reason, rejected_at`,
+            [sellerId]
+          );
 
     if (result.rowCount === 0) {
       return NextResponse.json(

@@ -490,6 +490,12 @@ export default function AdminUsersView({ initialUsers, currentAdminId }) {
                             variant="seller"
                             status={user.seller_status}
                           />
+                          {user.seller_status === "rejected" &&
+                          user.rejection_reason ? (
+                            <p className="mt-1.5 max-w-[260px] text-[13px] leading-snug text-[#B91C1C]">
+                              Alasan: {user.rejection_reason}
+                            </p>
+                          ) : null}
                         </td>
 
                         <td className="py-4 px-5">

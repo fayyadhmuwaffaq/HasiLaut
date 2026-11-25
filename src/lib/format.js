@@ -125,3 +125,18 @@ export function slugify(text) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/**
+ * Convert an Indonesian phone number string to a clickable WhatsApp wa.me URL.
+ */
+export function toWhatsAppUrl(phoneNumber, message = "") {
+  const digits = String(phoneNumber || "").replace(/\D/g, "");
+  if (digits.length < 8) {
+    return null;
+  }
+
+  const normalized = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
+  return message
+    ? `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/${normalized}`;
+}

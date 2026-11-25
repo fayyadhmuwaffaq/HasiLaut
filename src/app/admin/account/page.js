@@ -6,7 +6,7 @@ import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 export const metadata = {
   title: "Profil & Keamanan Akun Admin",
   description:
-    "Ubah nama dan email akun Administrator serta perbarui kata sandi keamanan.",
+    "Ubah nama, email, nomor telepon resmi, dan kata sandi keamanan akun Administrator.",
 };
 
 export const dynamic = "force-dynamic";
@@ -22,8 +22,8 @@ export default async function AdminAccountPage() {
             Profil & Keamanan Akun Admin
           </h1>
           <p className="text-[16px] text-[#475569]">
-            Perbarui nama, alamat email, serta kata sandi akun Administrator
-            untuk menjaga keamanan platform.
+            Perbarui nama, email, nomor telepon resmi (ditampilkan pada halaman
+            banding seller), serta kata sandi akun Administrator.
           </p>
         </div>
 
@@ -57,6 +57,8 @@ export default async function AdminAccountPage() {
             endpoint="/api/admin/account"
             initialFullName={adminUser.full_name}
             initialEmail={adminUser.email}
+            initialPhone={adminUser.phone_number || ""}
+            showPhone
             roleLabel="Administrator"
           />
         </section>
