@@ -8,22 +8,6 @@ import { EmptyState, ErrorBanner } from "@/components/ui/FeedbackStates";
 import { CloseIcon } from "@/components/ui/Icons";
 import { formatDateTime } from "@/lib/format";
 
-const QUICK_REJECTION_REASONS = [
-  {
-    label: "Data lapak kurang",
-    value: "Data lapak atau lokasi dermaga belum lengkap dan perlu diperbaiki.",
-  },
-  {
-    label: "Melanggar ketentuan",
-    value:
-      "Produk atau aktivitas lapak tidak sesuai dengan ketentuan platform.",
-  },
-  {
-    label: "Perlu klarifikasi kontak",
-    value: "Data pemilik atau kontak lapak memerlukan verifikasi lebih lanjut.",
-  },
-];
-
 export default function AdminSellerQueueView({ initialSellers }) {
   const router = useRouter();
   const { showSuccess } = useToast();
@@ -366,28 +350,6 @@ export default function AdminSellerQueueView({ initialSellers }) {
 
             <form onSubmit={handleRejectSubmit} className="mt-4 space-y-4">
               {rejectError ? <ErrorBanner message={rejectError} /> : null}
-
-              <div className="space-y-2">
-                <p className="text-[13px] font-medium text-[#475569]">
-                  Template cepat (opsional):
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {QUICK_REJECTION_REASONS.map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      disabled={isRejectBusy}
-                      onClick={() => {
-                        setRejectReason(preset.value);
-                        setRejectError("");
-                      }}
-                      className="inline-flex min-h-[36px] items-center rounded-md border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-1.5 text-[13px] font-medium text-[#334155] hover:border-[#0369A1] hover:text-[#0369A1] disabled:opacity-50"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               <div>
                 <div className="mb-2 flex items-center justify-between gap-2">
